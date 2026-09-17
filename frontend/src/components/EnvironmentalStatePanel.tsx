@@ -291,6 +291,7 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
                     onEnrichGeo(newLat, newLng);
                   }}
                   isLoading={geoLoading}
+                  regionName={state.location.region}
                 />
               </div>
             )}

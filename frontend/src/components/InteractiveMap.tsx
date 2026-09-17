@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import L from 'leaflet';
-import { Navigation, Maximize2, Minimize2 } from 'lucide-react';
+import { Navigation, Maximize2, Minimize2, Expand } from 'lucide-react';
+import { WideMapModal } from './WideMapModal';
 
 interface Props {
   latitude: number | null | undefined;
   longitude: number | null | undefined;
   onSelectCoordinates: (lat: number, lng: number) => void;
   isLoading: boolean;
+  regionName?: string | null;
 }
 
 const REGIONAL_PRESETS = [
@@ -22,12 +24,14 @@ export const InteractiveMap: React.FC<Props> = ({
   latitude,
   longitude,
   onSelectCoordinates,
-  isLoading
+  isLoading,
+  regionName
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
   const [mapSize, setMapSize] = useState<MapSize>('normal');
+  const [isWideModalOpen, setIsWideModalOpen] = useState(false);
 
   const currentLat = latitude ?? 19.99;
   const currentLng = longitude ?? 73.78;
@@ -150,16 +154,28 @@ export const InteractiveMap: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Quick Enlarge Toggle */}
-        <button
-          type="button"
-          onClick={() => setMapSize(prev => prev === 'normal' ? 'large' : prev === 'large' ? 'xl' : 'normal')}
-          className="text-[10px] px-2.5 py-0.5 rounded-lg bg-cyan-50 dark:bg-cyan-950/70 hover:bg-cyan-100 dark:hover:bg-cyan-900 text-cyan-800 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-800 flex items-center gap-1 font-semibold transition cursor-pointer shadow-2xs"
-          title="Click to toggle map size (Normal -> Large -> XL)"
-        >
-          {mapSize === 'normal' ? <Maximize2 className="w-3 h-3 text-cyan-600 dark:text-cyan-400" /> : <Minimize2 className="w-3 h-3 text-cyan-600 dark:text-cyan-400" />}
-          <span>{mapSize === 'normal' ? 'Resize: Larger ↕' : mapSize === 'large' ? 'Resize: XL ↕' : 'Reset Size ↕'}</span>
-        </button>
+        {/* Action Buttons: Height Toggle + Wide Screen View */}
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setMapSize(prev => prev === 'normal' ? 'large' : prev === 'large' ? 'xl' : 'normal')}
+            className="text-[10px] px-2 py-0.5 rounded-lg bg-cyan-50 dark:bg-cyan-950/70 hover:bg-cyan-100 dark:hover:bg-cyan-900 text-cyan-800 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-800 flex items-center gap-1 font-semibold transition cursor-pointer shadow-2xs"
+            title="Click to toggle map height (Normal -> Large -> XL)"
+          >
+            {mapSize === 'normal' ? <Maximize2 className="w-3 h-3 text-cyan-600 dark:text-cyan-400" /> : <Minimize2 className="w-3 h-3 text-cyan-600 dark:text-cyan-400" />}
+            <span>{mapSize === 'normal' ? 'Height ↕' : mapSize === 'large' ? 'Height XL ↕' : 'Reset ↕'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsWideModalOpen(true)}
+            className="text-[10px] px-2.5 py-0.5 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white flex items-center gap-1 font-bold transition cursor-pointer shadow-xs"
+            title="Open wide full-screen map modal to inspect and pick parcel boundaries across the entire display"
+          >
+            <Expand className="w-3 h-3" />
+            <span>Wide View ⛶</span>
+          </button>
+        </div>
       </div>
 
       {/* Quick Regional Preset Pills */}
@@ -190,25 +206,28 @@ export const InteractiveMap: React.FC<Props> = ({
           Click anywhere to select & enrich parcel
         </div>
 
-        {/* Quick Resize pill on overlay */}
-        <button
-          type="button"
-          onClick={() => setMapSize(prev => prev === 'normal' ? 'large' : prev === 'large' ? 'xl' : 'normal')}
-          className="absolute top-2 right-2 z-[400] bg-slate-900/90 hover:bg-slate-800 text-slate-200 backdrop-blur px-2.5 py-1 rounded-lg text-[10px] border border-slate-700 flex items-center gap-1.5 shadow-md cursor-pointer transition font-medium"
-          title="Click to toggle larger map view for precise coordinate picking"
-        >
-          {mapSize === 'normal' ? (
-            <>
-              <Maximize2 className="w-3 h-3 text-cyan-400" />
-              <span>Resize Map</span>
-            </>
-          ) : (
-            <>
-              <Minimize2 className="w-3 h-3 text-amber-400" />
-              <span>{mapSize === 'large' ? 'Make XL' : 'Reset'}</span>
-            </>
-          )}
-        </button>
+        {/* Overlay Buttons: Height Toggle & Wide View */}
+        <div className="absolute top-2 right-2 z-[400] flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setMapSize(prev => prev === 'normal' ? 'large' : prev === 'large' ? 'xl' : 'normal')}
+            className="bg-slate-900/90 hover:bg-slate-800 text-slate-200 backdrop-blur px-2 py-1 rounded-lg text-[10px] border border-slate-700 flex items-center gap-1 shadow-md cursor-pointer transition font-medium"
+            title="Toggle inline map height"
+          >
+            {mapSize === 'normal' ? <Maximize2 className="w-3 h-3 text-cyan-400" /> : <Minimize2 className="w-3 h-3 text-amber-400" />}
+            <span>{mapSize === 'normal' ? 'Height ↕' : 'Reset'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsWideModalOpen(true)}
+            className="bg-cyan-600 hover:bg-cyan-700 text-white backdrop-blur px-2.5 py-1 rounded-lg text-[10px] border border-cyan-500 flex items-center gap-1 shadow-md cursor-pointer transition font-bold"
+            title="Open massive wide map modal across your whole screen"
+          >
+            <Expand className="w-3 h-3" />
+            <span>Wide Screen ⛶</span>
+          </button>
+        </div>
 
         {isLoading && (
           <div className="absolute inset-0 z-[500] bg-slate-950/70 backdrop-blur-xs flex items-center justify-center text-xs text-emerald-400 font-semibold gap-2">
@@ -217,6 +236,17 @@ export const InteractiveMap: React.FC<Props> = ({
           </div>
         )}
       </div>
+
+      {/* Full-Screen Expansive Wide Map Modal */}
+      <WideMapModal
+        isOpen={isWideModalOpen}
+        onClose={() => setIsWideModalOpen(false)}
+        latitude={latitude}
+        longitude={longitude}
+        onSelectCoordinates={onSelectCoordinates}
+        isLoading={isLoading}
+        regionName={regionName}
+      />
     </div>
   );
 };
