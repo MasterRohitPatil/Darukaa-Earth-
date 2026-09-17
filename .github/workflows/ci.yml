@@ -1,4 +1,4 @@
-name: EcoReason CI Quality Gates
+name: Darukaa Advance AI Model CI Quality Gates
 
 on:
   push:
