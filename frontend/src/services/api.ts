@@ -8,6 +8,16 @@ export const api = {
     return res.json();
   },
 
+  async setGeminiKey(apiKey: string) {
+    const res = await fetch(`${API_BASE}/settings/key`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gemini_api_key: apiKey })
+    });
+    if (!res.ok) throw new Error(`Set Key error: ${res.statusText}`);
+    return res.json();
+  },
+
   async sendMessage(message: string, sessionId?: string, structuredData?: Partial<EnvironmentalState>) {
     const res = await fetch(`${API_BASE}/chat`, {
       method: 'POST',

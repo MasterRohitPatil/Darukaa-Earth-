@@ -1,18 +1,22 @@
 import React from 'react';
-import { Leaf, Sparkles, Database, FileDown } from 'lucide-react';
+import { Leaf, Sparkles, Database, FileDown, Key } from 'lucide-react';
 
 interface HeaderProps {
   onLoadScenario: (scenarioNum: number) => void;
   onOpenScenarioModal: () => void;
   onOpenEvidenceLibrary: () => void;
   onOpenDossierModal: () => void;
+  onOpenSettingsModal: () => void;
+  geminiActive: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   onLoadScenario,
   onOpenScenarioModal,
   onOpenEvidenceLibrary,
-  onOpenDossierModal
+  onOpenDossierModal,
+  onOpenSettingsModal,
+  geminiActive
 }) => {
   return (
     <header className="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-40 px-4 py-3">
@@ -93,6 +97,19 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <FileDown className="w-3.5 h-3.5 text-emerald-400" />
             Export Dossier
+          </button>
+
+          <button
+            onClick={onOpenSettingsModal}
+            className={`text-xs px-3 py-1.5 rounded-lg border transition flex items-center gap-1.5 font-medium cursor-pointer ${
+              geminiActive
+                ? 'bg-emerald-950/80 text-emerald-300 border-emerald-700'
+                : 'bg-amber-950/80 text-amber-300 border-amber-800 hover:bg-amber-900'
+            }`}
+            title="Configure Google Gemini API Key"
+          >
+            <Key className={`w-3.5 h-3.5 ${geminiActive ? 'text-emerald-400' : 'text-amber-400'}`} />
+            {geminiActive ? 'Gemini: Active' : 'API Key'}
           </button>
         </div>
       </div>

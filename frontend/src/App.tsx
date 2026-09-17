@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { EnvironmentalStatePanel } from './components/EnvironmentalStatePanel';
 import { ChatArea } from './components/ChatArea';
@@ -6,6 +6,7 @@ import { ReasoningCockpit } from './components/ReasoningCockpit';
 import { ScenarioComparatorModal } from './components/ScenarioComparatorModal';
 import { EvidenceLibraryModal } from './components/EvidenceLibraryModal';
 import { DossierExportModal } from './components/DossierExportModal';
+import { SettingsModal } from './components/SettingsModal';
 import { api } from './services/api';
 import type { 
   EnvironmentalState, 
@@ -27,6 +28,16 @@ export function App() {
   const [sessionId, setSessionId] = useState<string | undefined>(undefined);
   const [environmentalState, setEnvironmentalState] = useState<EnvironmentalState>(INITIAL_STATE);
   const [completenessScore, setCompletenessScore] = useState<number>(0);
+  const [geminiActive, setGeminiActive] = useState<boolean>(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  useEffect(() => {
+    api.healthCheck().then((res) => {
+      if (res && res.gemini_configured) {
+        setGeminiActive(true);
+      }
+    }).catch(() => {});
+  }, []);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome',
@@ -141,6 +152,8 @@ export function App() {
         onOpenScenarioModal={() => setIsScenarioOpen(true)}
         onOpenEvidenceLibrary={() => setIsEvidenceOpen(true)}
         onOpenDossierModal={() => setIsDossierOpen(true)}
+        onOpenSettingsModal={() => setIsSettingsOpen(true)}
+        geminiActive={geminiActive}
       />
 
       {/* Main 3-Panel Cockpit */}
@@ -194,6 +207,12 @@ export function App() {
         state={environmentalState}
         reasoningSteps={reasoningSteps}
         recommendations={recommendations}
+      />
+
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        onKeySaved={() => setGeminiActive(true)}
       />
     </div>
   );

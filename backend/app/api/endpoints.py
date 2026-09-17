@@ -18,6 +18,36 @@ class GeoEnrichRequest(BaseModel):
     latitude: float
     longitude: float
 
+class SetKeyRequest(BaseModel):
+    gemini_api_key: str
+
+@router.post("/settings/key")
+async def set_gemini_key_endpoint(request: SetKeyRequest):
+    """
+    Updates the Google Gemini API key dynamically and saves to .env.
+    """
+    from app.config import settings
+    settings.GEMINI_API_KEY = request.gemini_api_key.strip()
+    
+    # Also update backend/.env
+    import os
+    env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), ".env")
+    if os.path.exists(env_path):
+        with open(env_path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+        with open(env_path, "w", encoding="utf-8") as f:
+            for line in lines:
+                if line.startswith("GEMINI_API_KEY="):
+                    f.write(f"GEMINI_API_KEY={settings.GEMINI_API_KEY}\n")
+                else:
+                    f.write(line)
+
+    return {
+        "status": "success",
+        "gemini_configured": bool(settings.GEMINI_API_KEY),
+        "key_preview": f"{settings.GEMINI_API_KEY[:8]}..." if settings.GEMINI_API_KEY else None
+    }
+
 @router.post("/geo/enrich")
 async def geo_enrich_endpoint(request: GeoEnrichRequest):
     """

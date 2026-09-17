@@ -54,8 +54,8 @@ class LLMExplanationService:
                 "validation_warnings": []
             }
 
-        # If sufficient data, generate full scientific decision explanation
-        if self.api_key and not settings.ALLOW_MOCK_FALLBACK:
+        # If Gemini API key is configured, call live Google Gemini API
+        if settings.GEMINI_API_KEY:
             try:
                 gemini_text = self._call_gemini(user_message, state, reasoning_steps, sanitized_recs, retrieved_evidence)
                 if gemini_text:
@@ -71,7 +71,7 @@ class LLMExplanationService:
             except Exception as e:
                 logger.warning(f"Gemini API call failed, falling back to deterministic synthesis: {e}")
 
-        # Deterministic synthesis (offline / resilient mode)
+        # Deterministic synthesis fallback (offline or keyless mode)
         synth_text = self._deterministic_synthesize(state, reasoning_steps, sanitized_recs)
         return {
             "explanation": synth_text,
@@ -158,7 +158,10 @@ Retrieved Evidence: {[e.text for e in retrieved_evidence]}
             "generationConfig": {"temperature": 0.2, "maxOutputTokens": 1000}
         }
         
-        response = self.client.post(url, params={"key": self.api_key}, json=payload, timeout=12.0)
+        api_key = settings.GEMINI_API_KEY
+        if not api_key:
+            return None
+        response = self.client.post(url, params={"key": api_key}, json=payload, timeout=12.0)
         if response.status_code == 200:
             data = response.json()
             candidates = data.get("candidates", [])
