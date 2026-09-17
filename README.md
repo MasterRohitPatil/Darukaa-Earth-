@@ -4,6 +4,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110-009688.svg)](https://fastapi.tiangolo.com/)
 [![React 19](https://img.shields.io/badge/React-19-61dafb.svg)](https://react.dev/)
 [![TailwindCSS v4](https://img.shields.io/badge/TailwindCSS-v4-38bdf8.svg)](https://tailwindcss.com/)
+[![CI Quality Gates](https://github.com/MasterRohitPatil/Darukaa-Earth-/actions/workflows/ci.yml/badge.svg)](https://github.com/MasterRohitPatil/Darukaa-Earth-/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **EcoReason** turns vague environmental observations or structured agricultural metrics into traceable, evidence-backed ecological interventions. Designed specifically for the **Darukaa.Earth AI Biodiversity Intelligence Challenge**, EcoReason rejects prompt-only guesswork in favor of a deterministic multi-variable reasoning engine, a retrievable hybrid RAG scientific knowledge layer (FAO, IPCC, IPBES, ISRIC), stateful multi-turn clarification memory, and strict anti-hallucination guardrails.
@@ -60,6 +61,35 @@ flowchart TB
     LLMService --> API
     API --> UI
 ```
+
+---
+
+## 🗄️ Database Architecture & Domain Schemas
+
+EcoReason is engineered for **zero-friction portability**, using an embedded SQLite engine with SQLAlchemy ORM requiring zero external server configuration.
+
+### 1. Relational Database Tables (SQLite)
+- **`sessions`**: Tracks unique user interaction sessions, creation timestamps, and lifecycle metadata.
+- **`states`**: Stores the full snapshot of the multi-variable `EnvironmentalState` per session, enabling stateful multi-turn memory.
+- **`messages`**: Records chronological conversation turns (role, content, structured JSON payloads) for context-aware dialog.
+- **`evidence`**: Pre-indexed scientific corpus chunks with organizational metadata, DOIs, and empirical mechanism vectors.
+
+### 2. Pydantic Domain Schemas (`app/schemas/`)
+- **`EnvironmentalState`**:
+  - `SoilState`: `ph`, `organic_carbon_percent`, `moisture` ("low", "adequate", "waterlogged"), `texture` ("sandy", "loam", "clay").
+  - `ClimateState`: `rainfall` (annual/seasonal mm), `temperature` (°C), `seasonality` ("semi-arid", "temperate", "tropical").
+  - `LandState`: `land_use`, `crop` (wheat, grapes, etc.), `monoculture` (boolean), `habitat_diversity`.
+  - `BiodiversityState`: `species_richness`, `species_occurrence_indicator` (GBIF observation proxy count).
+  - `HumanImpactState`: `pollution`, `pesticide_pressure`, `deforestation`.
+- **`RecommendationContract`**:
+  - `recommendation`: Specific, non-obvious agronomic intervention.
+  - `why_it_works`: Empirical biological and biophysical mechanism.
+  - `variables_used`: Explicit list of at least 3 multi-domain environmental variables analyzed.
+  - `impacted_metrics`: Target metrics, expected direction (`increase`, `decrease`, `stabilize`), and quantitative bounds.
+  - `time_horizon`: `short` (1–2 yrs), `medium` (3–5 yrs), or `long` (5–10 yrs).
+  - `confidence`: `high`, `medium`, or `low` based on evidence strength.
+  - `evidence`: List of `EvidenceCitation` objects (title, organization, URL/DOI, claim supported).
+  - `uncertainty`: Explicit limitations, climatic boundary conditions, and risks.
 
 ---
 
@@ -160,6 +190,20 @@ EcoReason includes 3 one-click demo scenario buttons in the top header:
 ### Scenario 3 — Geo-Spatial Enrichment
 - **Input**: *Coordinates (19.99°N, 73.78°E - Nashik, India).*
 - **Behavior**: Queries SoilGrids, NASA POWER, and GBIF occurrence indicators. Transparently labels all data sources, flags GBIF counts as an observational proxy rather than absolute biodiversity, and produces grounded recommendations.
+
+---
+
+## 🔄 CI/CD & Automated Quality Gates
+
+Every code contribution is automatically verified by **GitHub Actions** (`.github/workflows/ci.yml`) on Ubuntu environments with two parallel quality gates:
+
+1. **Backend & Rubric Verification Job**:
+   - Sets up Python 3.12 with pip dependency caching.
+   - Executes the full **Pytest suite (25 tests)** covering reasoning, RAG, schemas, state management, and anti-hallucination guardrails.
+   - Executes the standalone **`python verify.py`** script verifying all 6 challenge rubric criteria end-to-end.
+2. **Frontend Production Build Job**:
+   - Sets up Node.js 20 with npm dependency caching.
+   - Runs full TypeScript type-checking (`tsc -b`) and Vite production bundling (`vite build`) to guarantee 0 build or lint warnings.
 
 ---
 
