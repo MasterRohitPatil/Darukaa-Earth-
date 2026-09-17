@@ -118,11 +118,12 @@ class LLMExplanationService:
             parts.append("\n#### Evidence-Grounded Priority Interventions:")
             for idx, r in enumerate(recommendations, 1):
                 orgs = ", ".join({e.organization for e in r.evidence})
-                parts.append(f"**{idx}. {r.recommendation}** ({r.time_horizon.upper()} Horizon | Confidence: {r.confidence.upper()})")
-                parts.append(f"- *Mechanism*: {r.why_it_works}")
-                parts.append(f"- *Variables Examined*: {', '.join(r.variables_used)}")
-                parts.append(f"- *Scientific Sources*: {orgs}")
-                parts.append(f"- *Uncertainty & Boundaries*: {r.uncertainty}\n")
+                parts.append(f"##### {idx}. {r.recommendation}")
+                parts.append(f"> **Horizon**: `{r.time_horizon.upper()}` | **Confidence**: `{r.confidence.upper()}`")
+                parts.append(f"- **Mechanism**: {r.why_it_works}")
+                parts.append(f"- **Variables Examined**: {', '.join(r.variables_used)}")
+                parts.append(f"- **Scientific Sources**: {orgs}")
+                parts.append(f"- **Uncertainty & Boundaries**: {r.uncertainty}\n")
 
         return "\n".join(parts)
 

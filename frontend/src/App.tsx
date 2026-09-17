@@ -7,6 +7,7 @@ import { ScenarioComparatorModal } from './components/ScenarioComparatorModal';
 import { EvidenceLibraryModal } from './components/EvidenceLibraryModal';
 import { DossierExportModal } from './components/DossierExportModal';
 import { SettingsModal } from './components/SettingsModal';
+import { HelpSidebar } from './components/HelpSidebar';
 import { api } from './services/api';
 import type { 
   EnvironmentalState, 
@@ -25,11 +26,30 @@ const INITIAL_STATE: EnvironmentalState = {
 };
 
 export function App() {
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const saved = localStorage.getItem('ecoreason_theme');
+    return (saved === 'light' || saved === 'dark') ? saved : 'light';
+  });
+
   const [sessionId, setSessionId] = useState<string | undefined>(undefined);
   const [environmentalState, setEnvironmentalState] = useState<EnvironmentalState>(INITIAL_STATE);
   const [completenessScore, setCompletenessScore] = useState<number>(0);
   const [geminiActive, setGeminiActive] = useState<boolean>(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('ecoreason_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
 
   useEffect(() => {
     api.healthCheck().then((res) => {
@@ -145,7 +165,7 @@ export function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-slate-950 text-slate-100 font-sans overflow-hidden">
+    <div className="flex flex-col h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans overflow-hidden transition-colors">
       {/* Top Header & Demo Controls */}
       <Header
         onLoadScenario={handleLoadScenario}
@@ -153,6 +173,9 @@ export function App() {
         onOpenEvidenceLibrary={() => setIsEvidenceOpen(true)}
         onOpenDossierModal={() => setIsDossierOpen(true)}
         onOpenSettingsModal={() => setIsSettingsOpen(true)}
+        onOpenHelp={() => setIsHelpOpen(true)}
+        theme={theme}
+        onToggleTheme={toggleTheme}
         geminiActive={geminiActive}
       />
 
@@ -188,6 +211,12 @@ export function App() {
           />
         </section>
       </main>
+
+      {/* Help & Guide Slideout Drawer */}
+      <HelpSidebar
+        isOpen={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
+      />
 
       {/* Modals */}
       <ScenarioComparatorModal
