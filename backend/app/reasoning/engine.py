@@ -143,9 +143,17 @@ class EnvironmentalReasoningEngine:
 
         # Sort top interventions
         sorted_interventions = sorted(intervention_scores.items(), key=lambda x: x[1], reverse=True)
-        top_intervention_names = [name for name, _ in sorted_interventions[:2]]
+        # Sort top interventions — deduplicate by name to avoid repeats
+        seen_names: set = set()
+        deduped_interventions = []
+        for name, score in sorted_interventions:
+            if name not in seen_names:
+                seen_names.add(name)
+                deduped_interventions.append(name)
+        top_intervention_names = deduped_interventions[:2]
 
         recommendations: List[RecommendationContract] = []
+
 
         for intervention_name in top_intervention_names:
             # Retrieve supporting evidence for this specific intervention
@@ -209,6 +217,10 @@ class EnvironmentalReasoningEngine:
                     f"inter-annual precipitation variability, and seed mix selection. Quantitative gains require 1-3 seasons of continuous management."
                 )
 
+                # Final guard: skip if a rec with the same title was already added
+                if any(r.recommendation == rec_title for r in recommendations):
+                    continue
+
                 rec = RecommendationContract(
                     recommendation=rec_title,
                     why_it_works=primary_evidence.mechanism,
@@ -222,6 +234,7 @@ class EnvironmentalReasoningEngine:
                 recommendations.append(rec)
 
         return recommendations, steps
+
 
 # Singleton instance
 reasoning_engine = EnvironmentalReasoningEngine()
