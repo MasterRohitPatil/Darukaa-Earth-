@@ -5,6 +5,7 @@ import { ChatArea } from './components/ChatArea';
 import { ReasoningCockpit } from './components/ReasoningCockpit';
 import { ScenarioComparatorModal } from './components/ScenarioComparatorModal';
 import { EvidenceLibraryModal } from './components/EvidenceLibraryModal';
+import { DossierExportModal } from './components/DossierExportModal';
 import { api } from './services/api';
 import type { 
   EnvironmentalState, 
@@ -33,7 +34,7 @@ export function App() {
       content: 
         "Welcome to EcoReason — Evidence-Grounded Biodiversity Decision Intelligence.\n\n" +
         "I assess ecosystem challenges using a deterministic multi-variable reasoning engine grounded in FAO, IPCC, IPBES, and ISRIC scientific literature.\n\n" +
-        "You can describe your parcel's condition in natural language, pick a Demo Scenario from the top bar, or enrich coordinates with SoilGrids and NASA POWER.",
+        "You can describe your parcel's condition in natural language, pick a Demo Scenario from the top bar, or click anywhere on the interactive map to enrich coordinates.",
       timestamp: new Date().toISOString()
     }
   ]);
@@ -45,6 +46,7 @@ export function App() {
   // Modals
   const [isScenarioOpen, setIsScenarioOpen] = useState(false);
   const [isEvidenceOpen, setIsEvidenceOpen] = useState(false);
+  const [isDossierOpen, setIsDossierOpen] = useState(false);
 
   // Send message to backend
   const handleSendMessage = async (userText: string, structuredOverride?: Partial<EnvironmentalState>) => {
@@ -138,6 +140,7 @@ export function App() {
         onLoadScenario={handleLoadScenario}
         onOpenScenarioModal={() => setIsScenarioOpen(true)}
         onOpenEvidenceLibrary={() => setIsEvidenceOpen(true)}
+        onOpenDossierModal={() => setIsDossierOpen(true)}
       />
 
       {/* Main 3-Panel Cockpit */}
@@ -183,6 +186,14 @@ export function App() {
       <EvidenceLibraryModal
         isOpen={isEvidenceOpen}
         onClose={() => setIsEvidenceOpen(false)}
+      />
+
+      <DossierExportModal
+        isOpen={isDossierOpen}
+        onClose={() => setIsDossierOpen(false)}
+        state={environmentalState}
+        reasoningSteps={reasoningSteps}
+        recommendations={recommendations}
       />
     </div>
   );

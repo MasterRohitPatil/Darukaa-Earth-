@@ -10,7 +10,9 @@ import {
   Minus, 
   AlertCircle,
   BookOpen,
-  Activity
+  Activity,
+  GitFork,
+  ArrowRight
 } from 'lucide-react';
 
 interface Props {
@@ -24,7 +26,7 @@ export const ReasoningCockpit: React.FC<Props> = ({
   recommendations,
   onOpenEvidenceLibrary
 }) => {
-  const [activeTab, setActiveTab] = useState<'recommendations' | 'reasoning_graph'>('recommendations');
+  const [activeTab, setActiveTab] = useState<'recommendations' | 'reasoning_graph' | 'causal_nexus'>('recommendations');
 
   const renderDirectionIcon = (dir: string) => {
     switch (dir) {
@@ -42,28 +44,41 @@ export const ReasoningCockpit: React.FC<Props> = ({
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col h-full overflow-y-auto">
       {/* Tab Switcher Header */}
       <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-1.5">
           <button
             onClick={() => setActiveTab('recommendations')}
-            className={`text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 cursor-pointer ${
+            className={`text-xs px-2.5 py-1.5 rounded-lg font-medium transition flex items-center gap-1 cursor-pointer ${
               activeTab === 'recommendations'
                 ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            Recommendations ({recommendations.length})
+            Interventions ({recommendations.length})
           </button>
+          
           <button
             onClick={() => setActiveTab('reasoning_graph')}
-            className={`text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 cursor-pointer ${
+            className={`text-xs px-2.5 py-1.5 rounded-lg font-medium transition flex items-center gap-1 cursor-pointer ${
               activeTab === 'reasoning_graph'
                 ? 'bg-cyan-950 text-cyan-300 border border-cyan-800'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             <Activity className="w-3.5 h-3.5 text-cyan-400" />
-            Reasoning Chain ({reasoningSteps.length})
+            Reasoning Steps ({reasoningSteps.length})
+          </button>
+
+          <button
+            onClick={() => setActiveTab('causal_nexus')}
+            className={`text-xs px-2.5 py-1.5 rounded-lg font-medium transition flex items-center gap-1 cursor-pointer ${
+              activeTab === 'causal_nexus'
+                ? 'bg-indigo-950 text-indigo-300 border border-indigo-800'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <GitFork className="w-3.5 h-3.5 text-indigo-400" />
+            Causal Nexus
           </button>
         </div>
 
@@ -207,8 +222,8 @@ export const ReasoningCockpit: React.FC<Props> = ({
             ))
           )}
         </div>
-      ) : (
-        /* Reasoning Chain Graph View */
+      ) : activeTab === 'reasoning_graph' ? (
+        /* Reasoning Chain Step View */
         <div className="space-y-3 flex-1">
           {reasoningSteps.length === 0 ? (
             <div className="text-center py-12 text-slate-500 text-xs">
@@ -251,6 +266,81 @@ export const ReasoningCockpit: React.FC<Props> = ({
                 </div>
               </div>
             ))
+          )}
+        </div>
+      ) : (
+        /* Visual Causal Nexus Diagram View */
+        <div className="space-y-4 flex-1">
+          {reasoningSteps.length === 0 ? (
+            <div className="text-center py-12 text-slate-500 text-xs">
+              <GitFork className="w-8 h-8 text-slate-700 mx-auto mb-2" />
+              <p>Causal nexus visualizer requires active multi-variable state.</p>
+            </div>
+          ) : (
+            <div className="space-y-6 py-2">
+              <div className="text-xs text-slate-400 leading-relaxed bg-slate-950 p-3 rounded-xl border border-slate-800">
+                <span className="text-indigo-300 font-semibold block mb-1">
+                  🌐 Multi-Variable Ecological Causal Nexus:
+                </span>
+                Demonstrates how observed baseline variables combine non-linearly into compounding ecological pressures, directly mapping to scientifically grounded interventions.
+              </div>
+
+              {reasoningSteps.map((step, idx) => (
+                <div key={idx} className="bg-slate-950/80 border border-slate-800 rounded-xl p-4 space-y-3">
+                  {/* Layer 1: Observed Variables */}
+                  <div>
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block mb-1.5">
+                      Input Variable Nodes (Observed):
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {step.variables.map((v, i) => (
+                        <div key={i} className="px-2.5 py-1 rounded-lg bg-blue-950/60 border border-blue-800/60 text-blue-300 text-xs font-mono">
+                          {v}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Flow Arrow */}
+                  <div className="flex items-center justify-center text-slate-600">
+                    <span className="text-[10px] uppercase font-bold font-mono mr-1 text-slate-500">Compounding Nexus</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-indigo-400" />
+                  </div>
+
+                  {/* Layer 2: Ecological Pressure */}
+                  <div className="p-3 rounded-lg bg-red-950/30 border border-red-900/40">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-red-400 block mb-1">
+                      Synthesized Ecological Pressure:
+                    </span>
+                    <div className="text-xs font-bold text-red-200">
+                      {step.ecological_pressure}
+                    </div>
+                    <div className="text-[11px] text-slate-300 mt-1">
+                      {step.implication}
+                    </div>
+                  </div>
+
+                  {/* Flow Arrow */}
+                  <div className="flex items-center justify-center text-slate-600">
+                    <span className="text-[10px] uppercase font-bold font-mono mr-1 text-slate-500">Alleviated by</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-emerald-400" />
+                  </div>
+
+                  {/* Layer 3: Mapped Intervention */}
+                  <div className="p-3 rounded-lg bg-emerald-950/30 border border-emerald-900/40">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-400 block mb-1">
+                      Targeted FAO / IPCC Intervention:
+                    </span>
+                    <div className="text-xs font-bold text-emerald-200">
+                      {recommendations[idx]?.recommendation || 'Grounded Soil & Biodiversity Enhancement'}
+                    </div>
+                    <div className="text-[11px] text-slate-400 mt-1">
+                      {recommendations[idx]?.why_it_works || 'Root exudates and biological corridors buffer against calculated pressures.'}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}

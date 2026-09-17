@@ -1,16 +1,18 @@
 import React from 'react';
-import { Leaf, Sparkles, Database } from 'lucide-react';
+import { Leaf, Sparkles, Database, FileDown } from 'lucide-react';
 
 interface HeaderProps {
   onLoadScenario: (scenarioNum: number) => void;
   onOpenScenarioModal: () => void;
   onOpenEvidenceLibrary: () => void;
+  onOpenDossierModal: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   onLoadScenario,
   onOpenScenarioModal,
   onOpenEvidenceLibrary,
+  onOpenDossierModal
 }) => {
   return (
     <header className="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-40 px-4 py-3">
@@ -82,6 +84,15 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Database className="w-3.5 h-3.5 text-emerald-400" />
             Evidence Library
+          </button>
+
+          <button
+            onClick={onOpenDossierModal}
+            className="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-800/60 transition flex items-center gap-1.5 font-medium cursor-pointer"
+            title="Export full executive ecological briefing report"
+          >
+            <FileDown className="w-3.5 h-3.5 text-emerald-400" />
+            Export Dossier
           </button>
         </div>
       </div>

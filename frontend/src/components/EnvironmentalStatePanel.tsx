@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { EnvironmentalState } from '../types';
+import { InteractiveMap } from './InteractiveMap';
 import { 
   Compass, 
   Layers, 
@@ -9,7 +10,10 @@ import {
   Code, 
   MapPin, 
   RefreshCw,
-  HelpCircle
+  HelpCircle,
+  Map as MapIcon,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 interface Props {
@@ -27,6 +31,7 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
   geoLoading
 }) => {
   const [showJson, setShowJson] = useState(false);
+  const [showMap, setShowMap] = useState(true);
   const [lat, setLat] = useState(state.location.latitude?.toString() || '19.99');
   const [lng, setLng] = useState(state.location.longitude?.toString() || '73.78');
 
@@ -54,6 +59,7 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
   }
 
   const soc = state.soil.organic_carbon_percent;
+  const rainfall = state.climate.rainfall;
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col h-full overflow-y-auto">
@@ -118,27 +124,57 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
         </pre>
       ) : (
         <div className="space-y-3.5 flex-1">
-          {/* Location & Geo Card */}
+          {/* Interactive Geospatial Map & Coordinates */}
           <div className="bg-slate-950/40 border border-slate-800/80 rounded-xl p-3">
             <div className="flex items-center justify-between text-xs font-medium text-slate-300 mb-2">
               <span className="flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-cyan-400" />
-                Location & Geography
+                Geospatial Context
               </span>
-              <span className="text-[11px] text-slate-400">
+              <button
+                type="button"
+                onClick={() => setShowMap(!showMap)}
+                className="text-[11px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer"
+              >
+                <MapIcon className="w-3 h-3" />
+                {showMap ? 'Hide Map' : 'Show Map'}
+                {showMap ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              </button>
+            </div>
+
+            {/* Region Label */}
+            <div className="text-[11px] text-slate-300 font-medium mb-2 flex items-center justify-between">
+              <span className="text-slate-400">Identified Region:</span>
+              <span className="text-cyan-300 truncate max-w-[180px]">
                 {state.location.region || 'Unspecified'}
               </span>
             </div>
 
-            {/* Quick Geo Form */}
-            <form onSubmit={handleGeoSubmit} className="grid grid-cols-2 gap-2 mt-2">
+            {/* Collapsible Leaflet Map */}
+            {showMap && (
+              <div className="mb-2.5">
+                <InteractiveMap
+                  latitude={state.location.latitude}
+                  longitude={state.location.longitude}
+                  onSelectCoordinates={(newLat, newLng) => {
+                    setLat(newLat.toString());
+                    setLng(newLng.toString());
+                    onEnrichGeo(newLat, newLng);
+                  }}
+                  isLoading={geoLoading}
+                />
+              </div>
+            )}
+
+            {/* Manual Lat/Lng Form */}
+            <form onSubmit={handleGeoSubmit} className="grid grid-cols-2 gap-2 mt-1">
               <div>
                 <label className="text-[10px] text-slate-500 block mb-0.5">Latitude</label>
                 <input
                   type="text"
                   value={lat}
                   onChange={(e) => setLat(e.target.value)}
-                  placeholder="e.g. 19.99"
+                  placeholder="19.99"
                   className="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded px-2 py-1 focus:outline-none focus:border-cyan-500 font-mono"
                 />
               </div>
@@ -148,7 +184,7 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
                   type="text"
                   value={lng}
                   onChange={(e) => setLng(e.target.value)}
-                  placeholder="e.g. 73.78"
+                  placeholder="73.78"
                   className="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded px-2 py-1 focus:outline-none focus:border-cyan-500 font-mono"
                 />
               </div>
@@ -159,18 +195,42 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
                   className="w-full bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-800 text-cyan-300 text-xs font-medium py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition disabled:opacity-50 cursor-pointer"
                 >
                   <RefreshCw className={`w-3 h-3 ${geoLoading ? 'animate-spin' : ''}`} />
-                  {geoLoading ? 'Enriching via SoilGrids/NASA POWER...' : 'Enrich with Geo-Data'}
+                  {geoLoading ? 'Enriching via SoilGrids/NASA POWER...' : 'Enrich Coordinates'}
                 </button>
               </div>
             </form>
           </div>
 
-          {/* Soil System Card */}
-          <div className="bg-slate-950/40 border border-slate-800/80 rounded-xl p-3">
-            <div className="flex items-center gap-1.5 text-xs font-medium text-slate-300 mb-2">
-              <Compass className="w-3.5 h-3.5 text-amber-400" />
-              Soil System (ISRIC Grounding)
+          {/* Soil System Card & Biophysical Gauge */}
+          <div className="bg-slate-950/40 border border-slate-800/80 rounded-xl p-3 space-y-2.5">
+            <div className="flex items-center justify-between text-xs font-medium text-slate-300">
+              <span className="flex items-center gap-1.5">
+                <Compass className="w-3.5 h-3.5 text-amber-400" />
+                Soil System (ISRIC Grounding)
+              </span>
+              <span className="text-[10px] text-slate-500 uppercase font-mono">0-30cm Depth</span>
             </div>
+
+            {/* Biophysical Threshold Meter for SOC */}
+            {soc !== null && soc !== undefined && (
+              <div className="bg-slate-900/90 p-2.5 rounded-lg border border-slate-800 space-y-1">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-slate-400">SOC Threshold Band:</span>
+                  <span className={`font-semibold ${soc < 0.75 ? 'text-red-400' : soc < 1.2 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                    {soc < 0.75 ? 'Severe Deficit (<0.75%)' : soc < 1.2 ? 'Sub-optimal (0.75-1.2%)' : 'Optimal Regenerative (>1.2%)'}
+                  </span>
+                </div>
+                <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden relative">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      soc < 0.75 ? 'bg-red-500' : soc < 1.2 ? 'bg-amber-400' : 'bg-emerald-400'
+                    }`}
+                    style={{ width: `${Math.min(100, (soc / 2.0) * 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="bg-slate-900/80 p-2 rounded border border-slate-800">
                 <div className="text-[10px] text-slate-400">Organic Carbon (SOC)</div>
@@ -212,17 +272,36 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
           </div>
 
           {/* Climate & Hydrology Card */}
-          <div className="bg-slate-950/40 border border-slate-800/80 rounded-xl p-3">
-            <div className="flex items-center gap-1.5 text-xs font-medium text-slate-300 mb-2">
+          <div className="bg-slate-950/40 border border-slate-800/80 rounded-xl p-3 space-y-2">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-slate-300">
               <CloudRain className="w-3.5 h-3.5 text-blue-400" />
               Climate Hydrology (NASA POWER Grounding)
             </div>
+
+            {/* Rainfall Regime Meter */}
+            {rainfall !== null && rainfall !== undefined && (
+              <div className="bg-slate-900/90 p-2 rounded-lg border border-slate-800 space-y-1">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-slate-400">Precipitation Regime:</span>
+                  <span className={`font-semibold ${rainfall < 500 ? 'text-amber-400' : 'text-cyan-400'}`}>
+                    {rainfall < 500 ? 'Dryland / Water-Limited' : 'Adequate Precipitation'}
+                  </span>
+                </div>
+                <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-amber-400 to-blue-400 rounded-full"
+                    style={{ width: `${Math.min(100, (rainfall / 1000) * 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="bg-slate-900/80 p-2 rounded border border-slate-800">
                 <div className="text-[10px] text-slate-400">Annual Rainfall</div>
                 <div className="font-semibold text-slate-100 mt-0.5">
-                  {state.climate.rainfall !== null ? (
-                    `${state.climate.rainfall} mm`
+                  {rainfall !== null && rainfall !== undefined ? (
+                    `${rainfall} mm`
                   ) : (
                     <span className="text-slate-500 italic">Not set</span>
                   )}
