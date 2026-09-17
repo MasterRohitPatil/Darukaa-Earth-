@@ -57,6 +57,22 @@ async def geo_enrich_endpoint(request: GeoEnrichRequest):
     enriched_data = geo_enricher.enrich_coordinates(request.latitude, request.longitude)
     return enriched_data
 
+class PincodeLookupRequest(BaseModel):
+    pincode: str
+
+@router.post("/geo/pincode")
+async def geo_pincode_endpoint(request: PincodeLookupRequest):
+    """
+    Resolves an Indian PIN code (e.g. 422001) or place name to GPS coordinates and region.
+    """
+    result = geo_enricher.lookup_pincode_or_place(request.pincode)
+    if not result:
+        raise HTTPException(
+            status_code=404, 
+            detail=f"Location or PIN code '{request.pincode}' could not be resolved. Please try a valid 6-digit Indian PIN code (e.g. 422001) or district name."
+        )
+    return result
+
 class ChatRequest(BaseModel):
     session_id: Optional[str] = None
     message: str

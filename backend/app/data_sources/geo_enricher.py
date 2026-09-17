@@ -132,4 +132,81 @@ class GeoSpatialEnricher:
             "scientific_disclaimer": "Species occurrence counts from GBIF serve as an observational proxy/indicator and do not represent absolute ecosystem species richness."
         }
 
+    def lookup_pincode_or_place(self, query: str) -> Optional[Dict[str, Any]]:
+        """
+        Geocodes an Indian PIN code or place name to latitude, longitude, and region.
+        Includes built-in instant fallback for prominent Indian agricultural zones.
+        """
+        q = query.strip()
+        if not q:
+            return None
+        
+        # 1. Check prominent built-in agricultural PIN code dictionary for instant 0ms resolution
+        PINCODE_CACHE = {
+            "422001": {"lat": 19.9975, "lng": 73.7898, "region": "Nashik, Maharashtra"},
+            "422002": {"lat": 19.9980, "lng": 73.7910, "region": "Nashik City, Maharashtra"},
+            "422003": {"lat": 20.0050, "lng": 73.8100, "region": "Panchavati, Nashik, Maharashtra"},
+            "141001": {"lat": 30.9035, "lng": 75.8283, "region": "Ludhiana, Punjab"},
+            "141004": {"lat": 30.9010, "lng": 75.8573, "region": "PAU Campus, Ludhiana, Punjab"},
+            "506001": {"lat": 17.9689, "lng": 79.5941, "region": "Warangal, Telangana"},
+            "506002": {"lat": 17.9800, "lng": 79.6000, "region": "Hanamkonda, Warangal, Telangana"},
+            "411001": {"lat": 18.5204, "lng": 73.8567, "region": "Pune, Maharashtra"},
+            "413102": {"lat": 18.1519, "lng": 74.5770, "region": "Baramati, Maharashtra"},
+            "440001": {"lat": 21.1458, "lng": 79.0882, "region": "Nagpur, Maharashtra"},
+            "380001": {"lat": 23.0225, "lng": 72.5714, "region": "Ahmedabad, Gujarat"},
+            "302001": {"lat": 26.9124, "lng": 75.7873, "region": "Jaipur, Rajasthan"},
+            "560001": {"lat": 12.9716, "lng": 77.5946, "region": "Bengaluru, Karnataka"},
+            "600001": {"lat": 13.0827, "lng": 80.2707, "region": "Chennai, Tamil Nadu"},
+            "226001": {"lat": 26.8467, "lng": 80.9462, "region": "Lucknow, Uttar Pradesh"},
+            "452001": {"lat": 22.7196, "lng": 75.8577, "region": "Indore, Madhya Pradesh"},
+            "110001": {"lat": 28.6139, "lng": 77.2090, "region": "New Delhi, Delhi"},
+        }
+        clean_pin = "".join(filter(str.isdigit, q))
+        if len(clean_pin) == 6 and clean_pin in PINCODE_CACHE:
+            item = PINCODE_CACHE[clean_pin]
+            return {
+                "latitude": item["lat"],
+                "longitude": item["lng"],
+                "display_name": f"{clean_pin}, {item['region']}, India",
+                "region": item["region"]
+            }
+
+        # 2. Query Nominatim for postal code or place in India
+        try:
+            if len(clean_pin) == 6:
+                url = f"https://nominatim.openstreetmap.org/search?postalcode={clean_pin}&country=India&format=json"
+            else:
+                import urllib.parse
+                safe_q = urllib.parse.quote(q)
+                url = f"https://nominatim.openstreetmap.org/search?q={safe_q}&countrycodes=in&format=json"
+            resp = self.client.get(url, headers={"User-Agent": "EcoReason-DecisionIntelligence/1.0"})
+            if resp.status_code == 200:
+                results = resp.json()
+                if results and len(results) > 0:
+                    best = results[0]
+                    display_name = best.get("display_name", q)
+                    region = display_name.split(",")[0].strip()
+                    if len(display_name.split(",")) > 1:
+                        region = f"{region}, {display_name.split(',')[1].strip()}"
+                    return {
+                        "latitude": float(best["lat"]),
+                        "longitude": float(best["lon"]),
+                        "display_name": display_name,
+                        "region": region
+                    }
+        except Exception:
+            pass
+
+        # Fallback to closest archetype if it matches name roughly
+        for a in REGIONAL_ARCHETYPES:
+            if q.lower() in a["name"].lower() or q.lower() in a["region"].lower():
+                return {
+                    "latitude": a["lat"],
+                    "longitude": a["lng"],
+                    "display_name": f"{a['region']}, India",
+                    "region": a["region"]
+                }
+
+        return None
+
 geo_enricher = GeoSpatialEnricher()

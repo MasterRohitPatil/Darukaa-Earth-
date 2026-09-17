@@ -48,6 +48,19 @@ export const api = {
     return res.json();
   },
 
+  async lookupPincode(pincode: string) {
+    const res = await fetch(`${API_BASE}/geo/pincode`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pincode })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `Location lookup error: ${res.statusText}`);
+    }
+    return res.json();
+  },
+
   async runScenario(state: EnvironmentalState, scenarioType: string) {
     const res = await fetch(`${API_BASE}/scenario`, {
       method: 'POST',

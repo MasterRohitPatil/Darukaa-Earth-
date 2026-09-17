@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { X, MapPin, Navigation, Check, Compass } from 'lucide-react';
 
+import { api } from '../services/api';
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -13,12 +15,9 @@ interface Props {
 }
 
 const REGIONAL_PRESETS = [
-  { name: '🍇 Nashik, India (Semi-Arid)', lat: 19.99, lng: 73.78 },
-  { name: '🌾 Punjab, India (Alluvial Cropland)', lat: 30.90, lng: 75.85 },
-  { name: '🌱 Telangana, India (Dryland)', lat: 17.38, lng: 78.48 },
-  { name: '🫒 Andalusia, Spain (Mediterranean)', lat: 37.88, lng: -3.79 },
-  { name: '🌳 Cerrado, Brazil (Savanna Agro-ecosystem)', lat: -15.78, lng: -47.92 },
-  { name: '🌽 Iowa, USA (Temperate Corn/Soy)', lat: 42.03, lng: -93.63 }
+  { name: '🍇 Nashik, Maharashtra (Semi-Arid)', lat: 19.99, lng: 73.78, pin: '422001' },
+  { name: '🌾 Ludhiana, Punjab (Alluvial Wheat)', lat: 30.90, lng: 75.85, pin: '141001' },
+  { name: '🌱 Warangal, Telangana (Red Soil Dryland)', lat: 17.38, lng: 78.48, pin: '506001' },
 ];
 
 export const WideMapModal: React.FC<Props> = ({
@@ -36,17 +35,19 @@ export const WideMapModal: React.FC<Props> = ({
 
   const [selectedLat, setSelectedLat] = useState<number>(latitude ?? 19.99);
   const [selectedLng, setSelectedLng] = useState<number>(longitude ?? 73.78);
-  const [manualLat, setManualLat] = useState<string>((latitude ?? 19.99).toString());
-  const [manualLng, setManualLng] = useState<string>((longitude ?? 73.78).toString());
+
+  // Indian PIN code / district search
+  const [pincodeInput, setPincodeInput] = useState<string>('');
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [searchLoading, setSearchLoading] = useState<boolean>(false);
+  const [resolvedPlaceName, setResolvedPlaceName] = useState<string | null>(null);
 
   useEffect(() => {
     if (latitude !== null && latitude !== undefined) {
       setSelectedLat(latitude);
-      setManualLat(latitude.toString());
     }
     if (longitude !== null && longitude !== undefined) {
       setSelectedLng(longitude);
-      setManualLng(longitude.toString());
     }
   }, [latitude, longitude]);
 
@@ -94,8 +95,6 @@ export const WideMapModal: React.FC<Props> = ({
           const lngRounded = Number(e.latlng.lng.toFixed(4));
           setSelectedLat(latRounded);
           setSelectedLng(lngRounded);
-          setManualLat(latRounded.toString());
-          setManualLng(lngRounded.toString());
           marker.setLatLng([latRounded, lngRounded]);
         });
 
@@ -117,23 +116,28 @@ export const WideMapModal: React.FC<Props> = ({
     };
   }, [isOpen]);
 
-  const handleSelectPreset = (lat: number, lng: number) => {
-    setSelectedLat(lat);
-    setSelectedLng(lng);
-    setManualLat(lat.toString());
-    setManualLng(lng.toString());
-    if (mapInstanceRef.current && markerRef.current) {
-      markerRef.current.setLatLng([lat, lng]);
-      mapInstanceRef.current.setView([lat, lng], 8, { animate: true });
+  const handlePincodeSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pincodeInput.trim()) return;
+    setSearchLoading(true);
+    setSearchError(null);
+    try {
+      const res = await api.lookupPincode(pincodeInput.trim());
+      setResolvedPlaceName(res.display_name || res.region);
+      handleSelectPreset(res.latitude, res.longitude);
+    } catch (err: any) {
+      setSearchError(err.message || 'Location not found');
+    } finally {
+      setSearchLoading(false);
     }
   };
 
-  const handleApplyManualCoords = (e: React.FormEvent) => {
-    e.preventDefault();
-    const latNum = parseFloat(manualLat);
-    const lngNum = parseFloat(manualLng);
-    if (!isNaN(latNum) && !isNaN(lngNum)) {
-      handleSelectPreset(latNum, lngNum);
+  const handleSelectPreset = (lat: number, lng: number) => {
+    setSelectedLat(lat);
+    setSelectedLng(lng);
+    if (mapInstanceRef.current && markerRef.current) {
+      markerRef.current.setLatLng([lat, lng]);
+      mapInstanceRef.current.setView([lat, lng], 8, { animate: true });
     }
   };
 
@@ -165,11 +169,11 @@ export const WideMapModal: React.FC<Props> = ({
                   Full-Screen Geospatial Parcel Selector
                 </h2>
                 <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-800">
-                  Wide View
+                  India Focus
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 m-0">
-                Click anywhere on Earth to pinpoint parcel boundaries with high precision
+                Enter your 6-digit PIN code, city/district, or click anywhere on the map
               </p>
             </div>
           </div>
@@ -192,16 +196,40 @@ export const WideMapModal: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Toolbar: Regional Presets & Coordinates Form */}
-        <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-950/40 flex flex-wrap items-center justify-between gap-2 text-xs">
-          {/* Quick Presets */}
+        {/* Toolbar: PIN Code Search & Indian Agricultural Presets */}
+        <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-950/40 flex flex-wrap items-center justify-between gap-3 text-xs">
+          {/* Indian PIN Code / Place Search */}
+          <form onSubmit={handlePincodeSearch} className="flex items-center gap-1.5 flex-1 min-w-[280px]">
+            <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 shrink-0 flex items-center gap-1">
+              🇮🇳 PIN Code / City:
+            </span>
+            <input
+              type="text"
+              value={pincodeInput}
+              onChange={(e) => setPincodeInput(e.target.value)}
+              placeholder="Enter 6-digit Indian PIN (e.g. 422001) or City/District..."
+              className="flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 px-3 py-1.5 rounded-lg text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-cyan-500 font-medium"
+            />
+            <button
+              type="submit"
+              disabled={searchLoading || !pincodeInput.trim()}
+              className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-bold text-xs transition disabled:opacity-50 cursor-pointer shrink-0"
+            >
+              {searchLoading ? 'Locating...' : 'Find Location'}
+            </button>
+          </form>
+
+          {/* Quick Presets (Only 2-3 Indian Locations) */}
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-slate-500 dark:text-slate-400 font-medium text-[11px]">Quick Regions:</span>
+            <span className="text-slate-500 dark:text-slate-400 font-medium text-[11px]">Presets:</span>
             {REGIONAL_PRESETS.map((p, i) => (
               <button
                 key={i}
                 type="button"
-                onClick={() => handleSelectPreset(p.lat, p.lng)}
+                onClick={() => {
+                  setPincodeInput(p.pin);
+                  handleSelectPreset(p.lat, p.lng);
+                }}
                 className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer text-[11px] border ${
                   Math.abs(selectedLat - p.lat) < 0.05 && Math.abs(selectedLng - p.lng) < 0.05
                     ? 'bg-cyan-100 dark:bg-cyan-950 text-cyan-900 dark:text-cyan-300 border-cyan-400 dark:border-cyan-700 font-bold'
@@ -212,31 +240,21 @@ export const WideMapModal: React.FC<Props> = ({
               </button>
             ))}
           </div>
-
-          {/* Coordinate Form */}
-          <form onSubmit={handleApplyManualCoords} className="flex items-center gap-1.5">
-            <span className="text-[11px] text-slate-500 font-mono">Lat:</span>
-            <input
-              type="text"
-              value={manualLat}
-              onChange={(e) => setManualLat(e.target.value)}
-              className="w-18 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 px-2 py-1 rounded text-xs font-mono text-slate-800 dark:text-slate-200"
-            />
-            <span className="text-[11px] text-slate-500 font-mono">Lng:</span>
-            <input
-              type="text"
-              value={manualLng}
-              onChange={(e) => setManualLng(e.target.value)}
-              className="w-18 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 px-2 py-1 rounded text-xs font-mono text-slate-800 dark:text-slate-200"
-            />
-            <button
-              type="submit"
-              className="px-2.5 py-1 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded font-medium text-[11px] transition cursor-pointer"
-            >
-              Jump To
-            </button>
-          </form>
         </div>
+
+        {searchError && (
+          <div className="px-4 py-1.5 bg-red-100 dark:bg-red-950/80 text-red-700 dark:text-red-300 text-[11px] border-b border-red-200 dark:border-red-800 flex items-center justify-between">
+            <span>{searchError}</span>
+            <button onClick={() => setSearchError(null)} className="underline font-bold cursor-pointer">Dismiss</button>
+          </div>
+        )}
+
+        {resolvedPlaceName && (
+          <div className="px-4 py-1 bg-cyan-50 dark:bg-cyan-950/60 text-cyan-800 dark:text-cyan-300 text-[11px] border-b border-cyan-200 dark:border-cyan-800 flex items-center gap-1.5 font-medium">
+            <MapPin className="w-3.5 h-3.5 text-cyan-600" />
+            <span>Resolved Location: <strong>{resolvedPlaceName}</strong></span>
+          </div>
+        )}
 
         {/* Map Canvas (Expansive Width & Height) */}
         <div className="relative flex-1 w-full bg-slate-950">
