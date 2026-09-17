@@ -67,9 +67,9 @@ export function App() {
       id: 'welcome',
       role: 'assistant',
       content: 
-        "Welcome to EcoReason — Evidence-Grounded Biodiversity Decision Intelligence.\n\n" +
+        "Welcome to Darukaa Advance AI Model — Evidence-Grounded Biodiversity Decision Intelligence.\n\n" +
         "I assess ecosystem challenges using a deterministic multi-variable reasoning engine grounded in FAO, IPCC, IPBES, and ISRIC scientific literature.\n\n" +
-        "You can describe your parcel's condition in natural language, pick a Demo Scenario from the top bar, or click anywhere on the interactive map to enrich coordinates.",
+        "You can describe your parcel's condition in natural language, pick a Demo Scenario from the top bar, enter an Indian PIN code, or explore the interactive map to enrich coordinates.",
       timestamp: new Date().toISOString()
     }
   ]);

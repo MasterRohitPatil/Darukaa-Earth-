@@ -30,7 +30,7 @@ export const DossierExportModal: React.FC<Props> = ({
     });
 
     lines.push('# EXECUTIVE ECOLOGICAL ASSESSMENT REPORT');
-    lines.push(`**System**: EcoReason Decision Intelligence Platform`);
+    lines.push(`**System**: Darukaa Advance AI Model Platform`);
     lines.push(`**Generated**: ${dateStr}`);
     lines.push(`**Target Location**: ${state.location.region || 'Unspecified Regional Zone'} (${state.location.country || 'Global'})`);
     lines.push(`**Coordinates**: Lat ${state.location.latitude ?? 'N/A'}, Lon ${state.location.longitude ?? 'N/A'}`);
@@ -101,7 +101,7 @@ export const DossierExportModal: React.FC<Props> = ({
     const element = document.createElement('a');
     const file = new Blob([generateDossierText()], { type: 'text/markdown' });
     element.href = URL.createObjectURL(file);
-    element.download = `EcoReason_Report_${state.location.region?.replace(/\s+/g, '_') || 'Assessment'}.md`;
+    element.download = `Darukaa_Advance_AI_Report_${state.location.region?.replace(/\s+/g, '_') || 'Assessment'}.md`;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);

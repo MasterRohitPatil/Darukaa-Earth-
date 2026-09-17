@@ -45,7 +45,7 @@ export const HelpSidebar: React.FC<Props> = ({ isOpen, onClose }) => {
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 m-0">
-                  EcoReason User Guide & Orientation
+                  Darukaa Advance AI Model — Orientation
                 </h2>
                 <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
                   Decision Intelligence
@@ -153,10 +153,10 @@ export const HelpSidebar: React.FC<Props> = ({ isOpen, onClose }) => {
               <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 p-4 rounded-xl">
                 <h3 className="text-sm font-bold text-emerald-900 dark:text-emerald-200 m-0 mb-1 flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                  What makes EcoReason different from ordinary AI?
+                  What makes Darukaa Advance AI Model different?
                 </h3>
                 <p className="m-0 text-slate-700 dark:text-slate-300 text-[12px] leading-relaxed">
-                  EcoReason is an <strong>evidence-grounded environmental decision intelligence system</strong>. Instead of generating vague or hallucinated chatbot advice, it evaluates cross-domain biophysical interactions across <strong>Soil Health</strong>, <strong>Climate Hydrology</strong>, and <strong>Land Diversity</strong> using authoritative literature from <strong>FAO, IPCC, and IPBES</strong>.
+                  Darukaa Advance AI Model is an <strong>evidence-grounded environmental decision intelligence system</strong>. Instead of generating vague or hallucinated chatbot advice, it evaluates cross-domain biophysical interactions across <strong>Soil Health</strong>, <strong>Climate Hydrology</strong>, and <strong>Land Diversity</strong> using authoritative literature from <strong>FAO, IPCC, and IPBES</strong>.
                 </p>
               </div>
 
@@ -265,7 +265,7 @@ export const HelpSidebar: React.FC<Props> = ({ isOpen, onClose }) => {
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-600 dark:text-slate-300 m-0">
-                  Where you converse with EcoReason. If your input lacks crucial information, the AI stops to ask targeted questions (e.g. <em>"What is your rainfall regime?"</em>) and provides one-click answer pills so you can respond effortlessly.
+                  Where you converse with Darukaa Advance AI Model. If your input lacks crucial information, the AI stops to ask targeted questions (e.g. <em>"What is your rainfall regime?"</em>) and provides one-click answer pills so you can respond effortlessly.
                 </p>
               </div>
 
@@ -364,7 +364,7 @@ export const HelpSidebar: React.FC<Props> = ({ isOpen, onClose }) => {
                   Why Deterministic Scientific Reasoning?
                 </span>
                 <p className="text-[11px] text-slate-600 dark:text-slate-400 m-0 leading-relaxed">
-                  Most conversational chatbots generate plausible-sounding but ungrounded advice. EcoReason uses a deterministic reasoning engine that cross-references <strong>at least 3 interacting environmental variables</strong> before formulating recommendations.
+                  Most conversational chatbots generate plausible-sounding but ungrounded advice. Darukaa Advance AI Model uses a deterministic reasoning engine that cross-references <strong>at least 3 interacting environmental variables</strong> before formulating recommendations.
                 </p>
               </div>
 
@@ -461,7 +461,7 @@ export const HelpSidebar: React.FC<Props> = ({ isOpen, onClose }) => {
 
         {/* Modal Footer */}
         <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-          <span>EcoReason v1.0 • Grounded in FAO, IPCC, IPBES, & ISRIC</span>
+          <span>Darukaa Advance AI Model v1.0 • Grounded in FAO, IPCC, IPBES, & ISRIC</span>
           <button
             onClick={onClose}
             className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold cursor-pointer transition shadow-xs flex items-center gap-1.5"

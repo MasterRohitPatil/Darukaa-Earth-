@@ -1,4 +1,4 @@
-# EcoReason: Evidence-Grounded Environmental Decision Intelligence
+# Darukaa Advance AI Model: Evidence-Grounded Environmental Decision Intelligence
 
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110-009688.svg)](https://fastapi.tiangolo.com/)
@@ -7,13 +7,13 @@
 [![CI Quality Gates](https://github.com/MasterRohitPatil/Darukaa-Earth-/actions/workflows/ci.yml/badge.svg)](https://github.com/MasterRohitPatil/Darukaa-Earth-/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**EcoReason** turns vague environmental observations or structured agricultural metrics into traceable, evidence-backed ecological interventions. Designed specifically for the **Darukaa.Earth AI Biodiversity Intelligence Challenge**, EcoReason rejects prompt-only guesswork in favor of a deterministic multi-variable reasoning engine, a retrievable hybrid RAG scientific knowledge layer (FAO, IPCC, IPBES, ISRIC), stateful multi-turn clarification memory, and strict anti-hallucination guardrails.
+**Darukaa Advance AI Model** turns vague environmental observations or structured agricultural metrics into traceable, evidence-backed ecological interventions. Designed specifically for the **Darukaa.Earth AI Biodiversity Intelligence Challenge**, Darukaa Advance AI Model rejects prompt-only guesswork in favor of a deterministic multi-variable reasoning engine, a retrievable hybrid RAG scientific knowledge layer (FAO, IPCC, IPBES, ISRIC), stateful multi-turn clarification memory, and strict anti-hallucination guardrails.
 
 ---
 
-## 🌟 Why EcoReason Wins (Targeting 75%+ Technical Weights)
+## 🌟 Why Darukaa Advance AI Model Wins (Targeting 75%+ Technical Weights)
 
-| Challenge Weight | Hackathon Focus | How EcoReason Solves It |
+| Challenge Weight | Hackathon Focus | How Darukaa Advance AI Model Solves It |
 | :--- | :--- | :--- |
 | **30% Depth of Reasoning** | Multi-variable interactions (3+ variables) | **Deterministic Rule & Dependency Engine**: Evaluates cross-domain pressures (e.g. soil carbon deficit × water limitation × monoculture cropping = microbial & pollinator collapse) before generating interventions. |
 | **25% Scientific Grounding** | Empirical mechanisms & evidence | **Strict Anti-Hallucination Guardrail**: Prohibits invented quantitative figures; ties every mechanism and impacted metric directly to peer-reviewed and institutional literature (FAO, IPCC, IPBES). |
@@ -66,7 +66,7 @@ flowchart TB
 
 ## 🗄️ Database Architecture & Domain Schemas
 
-EcoReason is engineered for **zero-friction portability**, using an embedded SQLite engine with SQLAlchemy ORM requiring zero external server configuration.
+Darukaa Advance AI Model is engineered for **zero-friction portability**, using an embedded SQLite engine with SQLAlchemy ORM requiring zero external server configuration.
 
 ### 1. Relational Database Tables (SQLite)
 - **`sessions`**: Tracks unique user interaction sessions, creation timestamps, and lifecycle metadata.
@@ -95,7 +95,7 @@ EcoReason is engineered for **zero-friction portability**, using an embedded SQL
 
 ## 🔬 Curated Scientific Evidence Sources
 
-EcoReason grounds all recommendations in authoritative scientific assessments:
+Darukaa Advance AI Model grounds all recommendations in authoritative scientific assessments:
 1. **FAO (Food and Agriculture Organization of the United Nations)**:
    - *Conservation Agriculture & Soil Organic Carbon Guidelines* (FAO Soils Portal, 2023).
    - *Ecological Intensification & Crop Diversification in Monoculture Landscapes* (FAO, 2021).
@@ -177,7 +177,7 @@ Open **`http://127.0.0.1:5173/`** in your browser.
 
 ## 🧪 Verified Demo Scenarios
 
-EcoReason includes 3 one-click demo scenario buttons in the top header:
+Darukaa Advance AI Model includes 3 one-click demo scenario buttons in the top header:
 
 ### Scenario 1 — Incomplete Conversational Input
 - **Input**: *"Biodiversity is declining on my farm."*

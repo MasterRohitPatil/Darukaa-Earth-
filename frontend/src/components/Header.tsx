@@ -32,8 +32,8 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white m-0 leading-none">
-                EcoReason
+              <h1 className="text-lg md:text-xl font-bold tracking-tight text-slate-900 dark:text-white m-0 leading-none">
+                Darukaa Advance AI Model
               </h1>
               <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800/60">
                 Decision Intelligence
