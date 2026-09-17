@@ -6,7 +6,6 @@ import { ReasoningCockpit } from './components/ReasoningCockpit';
 import { ScenarioComparatorModal } from './components/ScenarioComparatorModal';
 import { EvidenceLibraryModal } from './components/EvidenceLibraryModal';
 import { DossierExportModal } from './components/DossierExportModal';
-import { SettingsModal } from './components/SettingsModal';
 import { HelpSidebar } from './components/HelpSidebar';
 import { api } from './services/api';
 import type { 
@@ -35,8 +34,16 @@ export function App() {
   const [environmentalState, setEnvironmentalState] = useState<EnvironmentalState>(INITIAL_STATE);
   const [completenessScore, setCompletenessScore] = useState<number>(0);
   const [geminiActive, setGeminiActive] = useState<boolean>(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isHelpOpen, setIsHelpOpen] = useState(false);
+  
+  // Open guide automatically on first visit so users understand the system immediately
+  const [isHelpOpen, setIsHelpOpen] = useState<boolean>(() => {
+    return localStorage.getItem('ecoreason_help_seen') !== 'true';
+  });
+
+  const handleCloseHelp = () => {
+    localStorage.setItem('ecoreason_help_seen', 'true');
+    setIsHelpOpen(false);
+  };
 
   useEffect(() => {
     if (theme === 'dark') {
@@ -172,7 +179,6 @@ export function App() {
         onOpenScenarioModal={() => setIsScenarioOpen(true)}
         onOpenEvidenceLibrary={() => setIsEvidenceOpen(true)}
         onOpenDossierModal={() => setIsDossierOpen(true)}
-        onOpenSettingsModal={() => setIsSettingsOpen(true)}
         onOpenHelp={() => setIsHelpOpen(true)}
         theme={theme}
         onToggleTheme={toggleTheme}
@@ -212,10 +218,10 @@ export function App() {
         </section>
       </main>
 
-      {/* Help & Guide Slideout Drawer */}
+      {/* Help & Guide Slideout Drawer (Auto-opened on first visit) */}
       <HelpSidebar
         isOpen={isHelpOpen}
-        onClose={() => setIsHelpOpen(false)}
+        onClose={handleCloseHelp}
       />
 
       {/* Modals */}
@@ -236,12 +242,6 @@ export function App() {
         state={environmentalState}
         reasoningSteps={reasoningSteps}
         recommendations={recommendations}
-      />
-
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        onKeySaved={() => setGeminiActive(true)}
       />
     </div>
   );

@@ -29,7 +29,7 @@ export const DossierExportModal: React.FC<Props> = ({
       day: 'numeric'
     });
 
-    lines.push('# EXECUTIVE ECOLOGICAL DECISION INTELLIGENCE DOSSIER');
+    lines.push('# EXECUTIVE ECOLOGICAL ASSESSMENT REPORT');
     lines.push(`**System**: EcoReason Decision Intelligence Platform`);
     lines.push(`**Generated**: ${dateStr}`);
     lines.push(`**Target Location**: ${state.location.region || 'Unspecified Regional Zone'} (${state.location.country || 'Global'})`);
@@ -86,7 +86,7 @@ export const DossierExportModal: React.FC<Props> = ({
     }
 
     lines.push('## 4. SCIENTIFIC & METHODOLOGICAL DISCLAIMER');
-    lines.push('This dossier is generated as evidence-grounded decision intelligence to support trained environmental specialists and agronomists. It does not replace on-site physical soil core sampling or localized micro-topographical surveys.');
+    lines.push('This assessment report is generated as evidence-grounded decision intelligence to support trained environmental specialists and agronomists. It does not replace on-site physical soil core sampling or localized micro-topographical surveys.');
 
     return lines.join('\n');
   };
@@ -101,7 +101,7 @@ export const DossierExportModal: React.FC<Props> = ({
     const element = document.createElement('a');
     const file = new Blob([generateDossierText()], { type: 'text/markdown' });
     element.href = URL.createObjectURL(file);
-    element.download = `EcoReason_Dossier_${state.location.region?.replace(/\s+/g, '_') || 'Assessment'}.md`;
+    element.download = `EcoReason_Report_${state.location.region?.replace(/\s+/g, '_') || 'Assessment'}.md`;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
@@ -116,10 +116,10 @@ export const DossierExportModal: React.FC<Props> = ({
             <FileText className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             <div>
               <h2 className="text-lg font-bold text-slate-900 dark:text-white m-0">
-                Executive Ecological Dossier
+                Export Ecological Assessment Report
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Publication-Grade Briefing Document for Environmental Scientists & Agronomists
+                Print, save as PDF, copy, or download the full evidence-grounded assessment
               </p>
             </div>
           </div>
