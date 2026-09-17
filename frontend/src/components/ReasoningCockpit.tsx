@@ -1,0 +1,259 @@
+import React, { useState } from 'react';
+import type { RecommendationContract, ReasoningStep } from '../types';
+import { 
+  CheckCircle, 
+  ExternalLink, 
+  Clock, 
+  ShieldCheck, 
+  TrendingUp, 
+  TrendingDown, 
+  Minus, 
+  AlertCircle,
+  BookOpen,
+  Activity
+} from 'lucide-react';
+
+interface Props {
+  reasoningSteps: ReasoningStep[];
+  recommendations: RecommendationContract[];
+  onOpenEvidenceLibrary: () => void;
+}
+
+export const ReasoningCockpit: React.FC<Props> = ({
+  reasoningSteps,
+  recommendations,
+  onOpenEvidenceLibrary
+}) => {
+  const [activeTab, setActiveTab] = useState<'recommendations' | 'reasoning_graph'>('recommendations');
+
+  const renderDirectionIcon = (dir: string) => {
+    switch (dir) {
+      case 'increase':
+      case 'restore':
+        return <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />;
+      case 'decrease':
+        return <TrendingDown className="w-3.5 h-3.5 text-red-400" />;
+      default:
+        return <Minus className="w-3.5 h-3.5 text-blue-400" />;
+    }
+  };
+
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col h-full overflow-y-auto">
+      {/* Tab Switcher Header */}
+      <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setActiveTab('recommendations')}
+            className={`text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'recommendations'
+                ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            Recommendations ({recommendations.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('reasoning_graph')}
+            className={`text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'reasoning_graph'
+                ? 'bg-cyan-950 text-cyan-300 border border-cyan-800'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Activity className="w-3.5 h-3.5 text-cyan-400" />
+            Reasoning Chain ({reasoningSteps.length})
+          </button>
+        </div>
+
+        <button
+          onClick={onOpenEvidenceLibrary}
+          className="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1 cursor-pointer"
+          title="Browse Full Evidence Corpus"
+        >
+          <BookOpen className="w-3 h-3 text-emerald-400" />
+          Corpus
+        </button>
+      </div>
+
+      {/* Main Content Area */}
+      {activeTab === 'recommendations' ? (
+        <div className="space-y-4 flex-1">
+          {recommendations.length === 0 ? (
+            <div className="text-center py-12 text-slate-500 text-xs">
+              <Activity className="w-8 h-8 text-slate-700 mx-auto mb-2 animate-pulse" />
+              <p>Awaiting sufficient multi-variable environmental input.</p>
+              <p className="text-[11px] text-slate-600 mt-1">
+                Provide at least 3 variables (soil, climate, land use) to trigger deterministic reasoning.
+              </p>
+            </div>
+          ) : (
+            recommendations.map((rec, idx) => (
+              <div
+                key={idx}
+                className="bg-slate-950/70 border border-slate-800 rounded-xl p-4 space-y-3.5 shadow-sm hover:border-slate-700 transition"
+              >
+                {/* Card Title & Badges */}
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800/80">
+                      Priority Intervention #{idx + 1}
+                    </span>
+                    <div className="flex items-center gap-2 text-[11px]">
+                      <span className="flex items-center gap-1 text-slate-400">
+                        <Clock className="w-3 h-3 text-slate-500" />
+                        {rec.time_horizon.toUpperCase()}
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-semibold uppercase text-[10px]">
+                        Confidence: {rec.confidence}
+                      </span>
+                    </div>
+                  </div>
+                  <h3 className="text-base font-bold text-white tracking-tight m-0">
+                    {rec.recommendation}
+                  </h3>
+                </div>
+
+                {/* Variables Examined */}
+                <div className="flex flex-wrap gap-1.5">
+                  <span className="text-[11px] text-slate-400 self-center mr-1">Variables Used:</span>
+                  {rec.variables_used.map((v, i) => (
+                    <span
+                      key={i}
+                      className="text-[11px] px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-300 font-mono"
+                    >
+                      {v}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Scientific Mechanism */}
+                <div className="bg-slate-900/60 p-3 rounded-lg border border-slate-800/80">
+                  <div className="text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1">
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                    Why It Works (Scientific Mechanism)
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed m-0">
+                    {rec.why_it_works}
+                  </p>
+                </div>
+
+                {/* Impacted Metrics Matrix */}
+                <div>
+                  <div className="text-xs font-semibold text-slate-400 mb-2">
+                    Impacted Environmental Metrics:
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {rec.impacted_metrics.map((metric, i) => (
+                      <div
+                        key={i}
+                        className="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex items-center justify-between text-xs"
+                      >
+                        <span className="text-slate-300 font-medium truncate">{metric.metric}</span>
+                        <div className="flex items-center gap-1 shrink-0 ml-1">
+                          {renderDirectionIcon(metric.direction)}
+                          <span className="capitalize text-[10px] text-slate-400 font-semibold">
+                            {metric.direction}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Evidence Trace Accordion */}
+                <div className="pt-2 border-t border-slate-800/80">
+                  <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center justify-between">
+                    <span>Evidence Trace (FAO / IPCC / IPBES Citations):</span>
+                  </div>
+                  <div className="space-y-2">
+                    {rec.evidence.map((ev, i) => (
+                      <div
+                        key={i}
+                        className="bg-slate-900/40 p-2.5 rounded-lg border border-slate-800 text-xs space-y-1"
+                      >
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="font-semibold text-emerald-300">{ev.organization} ({ev.year || 2023})</span>
+                          <a
+                            href={ev.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 text-[11px]"
+                          >
+                            Inspect Source <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </div>
+                        <div className="text-slate-300 font-medium">{ev.title}</div>
+                        <div className="text-[11px] text-slate-400 italic">
+                          "{ev.claim_supported}"
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Uncertainty & Limitations */}
+                <div className="bg-amber-950/30 border border-amber-800/40 p-2.5 rounded-lg text-xs text-amber-200">
+                  <div className="flex items-center gap-1.5 font-semibold text-amber-300 mb-1 text-[11px]">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    Uncertainty & Boundaries:
+                  </div>
+                  <p className="text-[11px] text-amber-200/90 leading-relaxed m-0">
+                    {rec.uncertainty}
+                  </p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      ) : (
+        /* Reasoning Chain Graph View */
+        <div className="space-y-3 flex-1">
+          {reasoningSteps.length === 0 ? (
+            <div className="text-center py-12 text-slate-500 text-xs">
+              <p>No active interaction chain calculated yet.</p>
+            </div>
+          ) : (
+            reasoningSteps.map((step) => (
+              <div
+                key={step.step_number}
+                className="bg-slate-950/70 border border-slate-800 rounded-xl p-3.5 space-y-2 relative pl-6"
+              >
+                {/* Step Connector Indicator */}
+                <div className="absolute left-2.5 top-4 bottom-4 w-0.5 bg-gradient-to-b from-cyan-500 to-emerald-500 rounded"></div>
+
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-cyan-400 font-mono text-[11px]">
+                    STEP {step.step_number}
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    Cross-Variable Synthesis
+                  </span>
+                </div>
+
+                <div className="text-xs font-semibold text-slate-200">
+                  {step.ecological_pressure}
+                </div>
+
+                <div className="bg-slate-900/60 p-2 rounded border border-slate-800 text-xs text-slate-300">
+                  <span className="text-[10px] text-slate-500 uppercase font-bold block mb-0.5">
+                    Observation & Interacting Variables:
+                  </span>
+                  {step.observation}
+                </div>
+
+                <div className="text-xs text-slate-400">
+                  <span className="text-[10px] text-emerald-400 uppercase font-bold block mb-0.5">
+                    Biological Implication:
+                  </span>
+                  {step.implication}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+};

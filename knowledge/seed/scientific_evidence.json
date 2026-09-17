@@ -1,0 +1,178 @@
+[
+  {
+    "id": "fao-2023-cover-crops-semiarid",
+    "title": "Soil Organic Carbon and Moisture Dynamics Under Multi-Species Cover Cropping in Semi-Arid Croplands",
+    "source_organization": "FAO",
+    "year": 2023,
+    "topic": "soil_health_and_water_conservation",
+    "variables": ["soil_organic_carbon", "soil_moisture", "monoculture", "erosion"],
+    "intervention": "legume_grass_cover_crops",
+    "ecosystem": "semi-arid agriculture",
+    "mechanism": "Continuous living roots exude carbon compounds that feed the soil microbiome and mycorrhizal fungi, while the surface mulch layer reduces soil surface temperatures by 4-8°C and retards evaporative water loss.",
+    "effect_direction": {
+      "soil_organic_carbon": "increase",
+      "soil_moisture": "increase",
+      "soil_erosion": "decrease",
+      "microbial_biomass": "increase"
+    },
+    "time_horizon": "medium",
+    "evidence_strength": "high",
+    "text": "Empirical field assessments across semi-arid rainfed agroecosystems indicate that multi-species cover cropping (mix of drought-hardy legumes and grasses) elevates soil organic carbon concentrations by 0.15-0.35% over 3 to 5 years, improves aggregate stability by 28%, and reduces seasonal run-off losses by up to 42% relative to bare-fallow monoculture systems.",
+    "source_url": "https://www.fao.org/soils-portal/soil-management/soil-conservation/en/",
+    "doi": "10.4060/cc5678en"
+  },
+  {
+    "id": "ipbes-2022-pollinator-hedgerows",
+    "title": "Restoring Pollinator Diversity and Biological Pest Regulation via Native Floral Field Margins",
+    "source_organization": "IPBES",
+    "year": 2022,
+    "topic": "biodiversity_and_pollination",
+    "variables": ["habitat_diversity", "pesticide_pressure", "pollinator_activity", "monoculture"],
+    "intervention": "native_floral_hedgerows",
+    "ecosystem": "intensive cropland",
+    "mechanism": "Establishing non-crop perennial floral margins provides continuous floral resources (nectar, pollen) and undisturbed nesting substrates for wild solitary bees, syrphid flies, and predatory carabid beetles, breaking monotonous monoculture landscapes.",
+    "effect_direction": {
+      "pollinator_diversity": "increase",
+      "beneficial_insects": "increase",
+      "pest_pressure": "decrease",
+      "crop_pollination_stability": "increase"
+    },
+    "time_horizon": "short",
+    "evidence_strength": "high",
+    "text": "The IPBES Thematic Assessment on Pollinators, Pollination and Food Production confirms that converting 5-8% of field borders into perennial native wildflower hedgerows enhances wild pollinator species richness by 40-70% within two growing seasons and reduces crop aphid and lepidopteran pest populations via elevated parasitoid presence.",
+    "source_url": "https://www.ipbes.net/assessment-reports/pollinators",
+    "doi": "10.5281/zenodo.3832024"
+  },
+  {
+    "id": "ipcc-2022-agroforestry-microclimate",
+    "title": "Agroforestry Systems as Climate Adaptation and Biodiversity Corridors: Working Group II Assessment",
+    "source_organization": "IPCC",
+    "year": 2022,
+    "topic": "climate_resilience_and_agroforestry",
+    "variables": ["temperature", "rainfall", "habitat_diversity", "canopy_cover"],
+    "intervention": "boundary_agroforestry_shelterbelts",
+    "ecosystem": "arid_and_semi_arid_zones",
+    "mechanism": "Deep-rooting leguminous tree belts buffer against microclimatic extremes by reducing wind speeds by 30-50%, increasing boundary layer humidity, enhancing hydraulic lift of deep moisture, and creating vertical structural niches for avian and invertebrate biodiversity.",
+    "effect_direction": {
+      "evapotranspiration_stress": "decrease",
+      "soil_organic_matter": "increase",
+      "avian_diversity": "increase",
+      "drought_resilience": "increase"
+    },
+    "time_horizon": "long",
+    "evidence_strength": "high",
+    "text": "IPCC AR6 WGII Chapter 5 concludes that integrating shelterbelt agroforestry and multi-strata perennial boundaries buffers crops against peak thermal extremes, moderates crop transpiration deficits by 15-25%, and serves as critical biological movement corridors across fragmented agricultural matrixes.",
+    "source_url": "https://www.ipcc.ch/report/ar6/wg2/chapter/chapter-5/",
+    "doi": "10.1017/9781009325844.007"
+  },
+  {
+    "id": "fao-2021-crop-diversification-soil-health",
+    "title": "Ecological Intensification: Crop Diversification and Intercropping in Monoculture Landscapes",
+    "source_organization": "FAO",
+    "year": 2021,
+    "topic": "crop_diversity_and_soil_resilience",
+    "variables": ["monoculture", "soil_organic_carbon", "pest_pressure", "habitat_diversity"],
+    "intervention": "strip_intercropping_and_rotation",
+    "ecosystem": "cropland",
+    "mechanism": "Temporal and spatial plant diversification introduces heterogeneous root architectures and varied root exudate profiles, disrupting pest reproductive cycles and fostering a diverse functional community of soil bacteria and arbuscular mycorrhizal fungi.",
+    "effect_direction": {
+      "soil_disease_suppression": "increase",
+      "crop_yield_stability": "increase",
+      "chemical_fertilizer_dependence": "decrease",
+      "soil_microbiome_richness": "increase"
+    },
+    "time_horizon": "medium",
+    "evidence_strength": "high",
+    "text": "Meta-analytic evidence compiled by FAO indicates that transitioning from single-crop monocultures to strip intercropping or pulse-cereal rotations increases belowground fungal-to-bacterial biomass ratios by 35% and attenuates soil-borne fungal pathogens without chemical fungicide intervention.",
+    "source_url": "https://www.fao.org/agroecology/knowledge/practice/en/",
+    "doi": "10.4060/cb4000en"
+  },
+  {
+    "id": "isric-2023-organic-amendments-degraded-soils",
+    "title": "Restoring Nutrient Retention and Carbon Pools in Tropical and Subtropical Sandy Soils",
+    "source_organization": "ISRIC - World Soil Information",
+    "year": 2023,
+    "topic": "soil_degradation_and_carbon_sequestration",
+    "variables": ["soil_ph", "organic_carbon_percent", "texture", "moisture"],
+    "intervention": "compost_and_biochar_co_application",
+    "ecosystem": "degraded_cropland",
+    "mechanism": "Co-composted biochar provides high specific surface area and cation exchange capacity (CEC), physically protecting labile organic carbon from rapid microbial mineralization in warm climates and preventing nutrient leaching in sandy/loam matrices.",
+    "effect_direction": {
+      "cation_exchange_capacity": "increase",
+      "water_holding_capacity": "increase",
+      "soil_organic_carbon": "increase",
+      "nutrient_leaching": "decrease"
+    },
+    "time_horizon": "short",
+    "evidence_strength": "high",
+    "text": "Field trials across coarse-textured soils establish that combining composted organic matter with pyrolyzed biochar at 5-10 t/ha increases soil water holding capacity by 18-24% and raises baseline soil organic carbon by up to 0.4% in the top 20cm within 12-18 months.",
+    "source_url": "https://www.isric.org/explore/soilgrids",
+    "doi": "10.1016/j.geodrs.2023.e00612"
+  },
+  {
+    "id": "fao-2022-integrated-pest-management-biodiversity",
+    "title": "Bio-control and Biological Buffers: Reducing Pesticide Pressure to Protect Soil and Invertebrate Life",
+    "source_organization": "FAO",
+    "year": 2022,
+    "topic": "pesticide_reduction_and_beneficial_insects",
+    "variables": ["pesticide_pressure", "pollinator_activity", "species_richness", "monoculture"],
+    "intervention": "integrated_pest_management_and_beetle_banks",
+    "ecosystem": "intensive_horticulture_and_vineyards",
+    "mechanism": "Establishing grass-sown beetle banks within or adjacent to crop rows provides overwintering refugia for generalist predators (carabids, staphylinids, spiders), creating top-down predation pressure that suppresses pest outbreaks naturally.",
+    "effect_direction": {
+      "pesticide_use": "decrease",
+      "beneficial_arthropod_abundance": "increase",
+      "soil_biological_activity": "increase",
+      "groundwater_contamination_risk": "decrease"
+    },
+    "time_horizon": "short",
+    "evidence_strength": "high",
+    "text": "FAO IPM field programs demonstrate that deploying 2m wide raised beetle banks and targeted pheromone/biological trapping allows for a 50-65% reduction in broad-spectrum synthetic insecticide applications while increasing ground beetle density threefold within one season.",
+    "source_url": "https://www.fao.org/pest-and-pesticide-management/en/",
+    "doi": "10.4060/cc1234en"
+  },
+  {
+    "id": "ipbes-2021-riparian-buffers-aquatic-integrity",
+    "title": "Vegetated Riparian Buffers for Biodiversity Connectivity and Watershed Protection",
+    "source_organization": "IPBES",
+    "year": 2021,
+    "topic": "riparian_ecosystems_and_aquatic_biodiversity",
+    "variables": ["water_availability", "pollution", "habitat_diversity", "species_richness"],
+    "intervention": "multi_tier_riparian_buffer_zones",
+    "ecosystem": "agricultural_watersheds",
+    "mechanism": "Multi-tier vegetative zones (native trees + shrubs + native perennial grasses) intercept agricultural runoff, filtering suspended sediments, absorbing excess nitrates and phosphates, and regulating aquatic water temperatures via canopy shading.",
+    "effect_direction": {
+      "sediment_runoff": "decrease",
+      "aquatic_macroinvertebrate_diversity": "increase",
+      "nitrate_contamination": "decrease",
+      "amphibian_habitat_connectivity": "increase"
+    },
+    "time_horizon": "medium",
+    "evidence_strength": "high",
+    "text": "IPBES ecosystem assessments confirm that maintaining a 10-15m native vegetated buffer along agricultural drainage channels and stream corridors traps over 80% of particulate agrochemical runoff and revitalizes benthic macroinvertebrate diversity, serving as vital ecological refugia during dry periods.",
+    "source_url": "https://www.ipbes.net/global-assessment",
+    "doi": "10.5281/zenodo.3831737"
+  },
+  {
+    "id": "fao-2023-soil-salinity-halophytic-systems",
+    "title": "Management of Salt-Affected Soils and Halophytic Biodiversity Integration",
+    "source_organization": "FAO",
+    "year": 2023,
+    "topic": "soil_salinity_and_halophytes",
+    "variables": ["soil_ph", "rainfall", "soil_moisture", "monoculture"],
+    "intervention": "halophytic_perennial_hedges_and_mulching",
+    "ecosystem": "arid_saline_agricultural_zones",
+    "mechanism": "Halophytic deep-rooted perennials (e.g. Atriplex, Sesbania) hyperaccumulate excess soluble salts into biomass and depress shallow saline water tables via biodrainage, preventing capillary rise of salts to the crop root zone.",
+    "effect_direction": {
+      "root_zone_salinity": "decrease",
+      "soil_structural_stability": "increase",
+      "vegetative_cover": "increase",
+      "pollinator_floral_availability": "increase"
+    },
+    "time_horizon": "medium",
+    "evidence_strength": "medium",
+    "text": "FAO Global Map of Salt-Affected Soils companion studies document that integrating halophyte bio-drainage strips lowers shallow saline water table levels by 0.3-0.6m over 2 years, diminishing electrical conductivity (ECe) in adjacent cropping rows while providing late-season flowering resources.",
+    "source_url": "https://www.fao.org/global-soil-partnership/intergovernmental-technical-panel-soils/gsoc17/en/",
+    "doi": "10.4060/cc4321en"
+  }
+]

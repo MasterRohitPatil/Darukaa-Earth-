@@ -1,0 +1,293 @@
+import React, { useState } from 'react';
+import type { EnvironmentalState } from '../types';
+import { 
+  Compass, 
+  Layers, 
+  CloudRain, 
+  Trees, 
+  AlertTriangle, 
+  Code, 
+  MapPin, 
+  RefreshCw,
+  HelpCircle
+} from 'lucide-react';
+
+interface Props {
+  state: EnvironmentalState;
+  completenessScore: number;
+  onEnrichGeo: (lat: number, lng: number) => void;
+  geoLoading: boolean;
+  onQuickPreset: (preset: any) => void;
+}
+
+export const EnvironmentalStatePanel: React.FC<Props> = ({
+  state,
+  completenessScore,
+  onEnrichGeo,
+  geoLoading
+}) => {
+  const [showJson, setShowJson] = useState(false);
+  const [lat, setLat] = useState(state.location.latitude?.toString() || '19.99');
+  const [lng, setLng] = useState(state.location.longitude?.toString() || '73.78');
+
+  const handleGeoSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const latNum = parseFloat(lat);
+    const lngNum = parseFloat(lng);
+    if (!isNaN(latNum) && !isNaN(lngNum)) {
+      onEnrichGeo(latNum, lngNum);
+    }
+  };
+
+  const missingVariables = [];
+  if (state.soil.organic_carbon_percent === null && state.soil.moisture === null) {
+    missingVariables.push('Soil Health (Carbon % / Moisture)');
+  }
+  if (state.climate.rainfall === null && state.climate.seasonality === null) {
+    missingVariables.push('Hydrology (Annual Rainfall / Seasonality)');
+  }
+  if (state.land.land_use === null && state.land.crop === null) {
+    missingVariables.push('Land Use / Target Crop');
+  }
+  if (state.land.monoculture === null && state.land.habitat_diversity === null) {
+    missingVariables.push('Crop Diversity / Field Margins');
+  }
+
+  const soc = state.soil.organic_carbon_percent;
+
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col h-full overflow-y-auto">
+      {/* Panel Title & Completeness Meter */}
+      <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+        <div className="flex items-center gap-2">
+          <Layers className="w-4 h-4 text-emerald-400" />
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-200 m-0">
+            Environmental State
+          </h2>
+        </div>
+        <button
+          onClick={() => setShowJson(!showJson)}
+          className="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1 bg-slate-800 px-2 py-1 rounded cursor-pointer"
+          title="Toggle Raw JSON View"
+        >
+          <Code className="w-3 h-3" />
+          {showJson ? 'Dashboard' : 'JSON'}
+        </button>
+      </div>
+
+      {/* Completeness Meter */}
+      <div className="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3 mb-4">
+        <div className="flex items-center justify-between text-xs mb-1.5">
+          <span className="text-slate-400 flex items-center gap-1">
+            Data Completeness
+            <span title="Ratio of critical variables known for multi-metric reasoning">
+              <HelpCircle className="w-3 h-3 text-slate-500" />
+            </span>
+          </span>
+          <span className={`font-mono font-semibold ${completenessScore >= 0.6 ? 'text-emerald-400' : 'text-amber-400'}`}>
+            {Math.round(completenessScore * 100)}%
+          </span>
+        </div>
+        <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+          <div
+            className={`h-full transition-all duration-500 rounded-full ${
+              completenessScore >= 0.6 ? 'bg-gradient-to-r from-emerald-500 to-teal-400' : 'bg-gradient-to-r from-amber-500 to-yellow-400'
+            }`}
+            style={{ width: `${Math.max(5, completenessScore * 100)}%` }}
+          />
+        </div>
+
+        {missingVariables.length > 0 && (
+          <div className="mt-2.5 pt-2 border-t border-slate-800/60">
+            <div className="flex items-center gap-1.5 text-xs text-amber-300 font-medium mb-1">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+              Missing Critical Variables:
+            </div>
+            <ul className="text-[11px] text-slate-400 space-y-0.5 pl-5 list-disc m-0">
+              {missingVariables.map((v, i) => (
+                <li key={i}>{v}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      {showJson ? (
+        <pre className="bg-slate-950 border border-slate-800 rounded-xl p-3 text-[11px] font-mono text-emerald-400 overflow-x-auto flex-1">
+          {JSON.stringify(state, null, 2)}
+        </pre>
+      ) : (
+        <div className="space-y-3.5 flex-1">
+          {/* Location & Geo Card */}
+          <div className="bg-slate-950/40 border border-slate-800/80 rounded-xl p-3">
+            <div className="flex items-center justify-between text-xs font-medium text-slate-300 mb-2">
+              <span className="flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-cyan-400" />
+                Location & Geography
+              </span>
+              <span className="text-[11px] text-slate-400">
+                {state.location.region || 'Unspecified'}
+              </span>
+            </div>
+
+            {/* Quick Geo Form */}
+            <form onSubmit={handleGeoSubmit} className="grid grid-cols-2 gap-2 mt-2">
+              <div>
+                <label className="text-[10px] text-slate-500 block mb-0.5">Latitude</label>
+                <input
+                  type="text"
+                  value={lat}
+                  onChange={(e) => setLat(e.target.value)}
+                  placeholder="e.g. 19.99"
+                  className="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded px-2 py-1 focus:outline-none focus:border-cyan-500 font-mono"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] text-slate-500 block mb-0.5">Longitude</label>
+                <input
+                  type="text"
+                  value={lng}
+                  onChange={(e) => setLng(e.target.value)}
+                  placeholder="e.g. 73.78"
+                  className="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded px-2 py-1 focus:outline-none focus:border-cyan-500 font-mono"
+                />
+              </div>
+              <div className="col-span-2 mt-1">
+                <button
+                  type="submit"
+                  disabled={geoLoading}
+                  className="w-full bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-800 text-cyan-300 text-xs font-medium py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition disabled:opacity-50 cursor-pointer"
+                >
+                  <RefreshCw className={`w-3 h-3 ${geoLoading ? 'animate-spin' : ''}`} />
+                  {geoLoading ? 'Enriching via SoilGrids/NASA POWER...' : 'Enrich with Geo-Data'}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Soil System Card */}
+          <div className="bg-slate-950/40 border border-slate-800/80 rounded-xl p-3">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-slate-300 mb-2">
+              <Compass className="w-3.5 h-3.5 text-amber-400" />
+              Soil System (ISRIC Grounding)
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="bg-slate-900/80 p-2 rounded border border-slate-800">
+                <div className="text-[10px] text-slate-400">Organic Carbon (SOC)</div>
+                <div className="font-semibold text-slate-100 flex items-center gap-1 mt-0.5">
+                  {soc !== null && soc !== undefined ? (
+                    <>
+                      <span>{soc}%</span>
+                      <span className={`text-[10px] px-1 py-0.2 rounded ${soc < 0.6 ? 'bg-red-950 text-red-400' : 'bg-emerald-950 text-emerald-400'}`}>
+                        {soc < 0.6 ? 'Critical' : 'Healthy'}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-slate-500 italic">Not set</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-slate-900/80 p-2 rounded border border-slate-800">
+                <div className="text-[10px] text-slate-400">Soil Moisture</div>
+                <div className="font-semibold text-slate-100 mt-0.5 capitalize">
+                  {state.soil.moisture || <span className="text-slate-500 italic">Not set</span>}
+                </div>
+              </div>
+
+              <div className="bg-slate-900/80 p-2 rounded border border-slate-800">
+                <div className="text-[10px] text-slate-400">Soil pH</div>
+                <div className="font-semibold text-slate-100 mt-0.5">
+                  {state.soil.ph !== null ? state.soil.ph : <span className="text-slate-500 italic">Not set</span>}
+                </div>
+              </div>
+
+              <div className="bg-slate-900/80 p-2 rounded border border-slate-800">
+                <div className="text-[10px] text-slate-400">Texture</div>
+                <div className="font-semibold text-slate-100 mt-0.5 capitalize truncate">
+                  {state.soil.texture || <span className="text-slate-500 italic">Not set</span>}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Climate & Hydrology Card */}
+          <div className="bg-slate-950/40 border border-slate-800/80 rounded-xl p-3">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-slate-300 mb-2">
+              <CloudRain className="w-3.5 h-3.5 text-blue-400" />
+              Climate Hydrology (NASA POWER Grounding)
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="bg-slate-900/80 p-2 rounded border border-slate-800">
+                <div className="text-[10px] text-slate-400">Annual Rainfall</div>
+                <div className="font-semibold text-slate-100 mt-0.5">
+                  {state.climate.rainfall !== null ? (
+                    `${state.climate.rainfall} mm`
+                  ) : (
+                    <span className="text-slate-500 italic">Not set</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-slate-900/80 p-2 rounded border border-slate-800">
+                <div className="text-[10px] text-slate-400">Seasonality / Zone</div>
+                <div className="font-semibold text-slate-100 mt-0.5 capitalize truncate">
+                  {state.climate.seasonality || <span className="text-slate-500 italic">Not set</span>}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Land Use & Biodiversity Card */}
+          <div className="bg-slate-950/40 border border-slate-800/80 rounded-xl p-3">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-slate-300 mb-2">
+              <Trees className="w-3.5 h-3.5 text-emerald-400" />
+              Land Use & Biodiversity Matrix
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="bg-slate-900/80 p-2 rounded border border-slate-800">
+                <div className="text-[10px] text-slate-400">Primary Crop</div>
+                <div className="font-semibold text-slate-100 mt-0.5 capitalize">
+                  {state.land.crop || state.land.land_use || <span className="text-slate-500 italic">Not set</span>}
+                </div>
+              </div>
+
+              <div className="bg-slate-900/80 p-2 rounded border border-slate-800">
+                <div className="text-[10px] text-slate-400">Monoculture System</div>
+                <div className="font-semibold text-slate-100 mt-0.5">
+                  {state.land.monoculture !== null ? (
+                    state.land.monoculture ? (
+                      <span className="text-amber-400">Yes (Single crop)</span>
+                    ) : (
+                      <span className="text-emerald-400">No (Diversified)</span>
+                    )
+                  ) : (
+                    <span className="text-slate-500 italic">Not set</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-slate-900/80 p-2 rounded border border-slate-800">
+                <div className="text-[10px] text-slate-400">GBIF Occurrence Proxy</div>
+                <div className="font-semibold text-slate-100 mt-0.5">
+                  {state.biodiversity.species_occurrence_indicator !== null ? (
+                    `${state.biodiversity.species_occurrence_indicator} records`
+                  ) : (
+                    <span className="text-slate-500 italic">Not set</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-slate-900/80 p-2 rounded border border-slate-800">
+                <div className="text-[10px] text-slate-400">Pesticide Pressure</div>
+                <div className="font-semibold text-slate-100 mt-0.5 capitalize">
+                  {state.human_impact.pesticide_pressure || <span className="text-slate-500 italic">Not set</span>}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
