@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { EnvironmentalState } from '../types';
 import { InteractiveMap } from './InteractiveMap';
 import { 
@@ -13,7 +13,9 @@ import {
   HelpCircle,
   Map as MapIcon,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Sliders,
+  Sparkles
 } from 'lucide-react';
 
 interface Props {
@@ -28,12 +30,43 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
   state,
   completenessScore,
   onEnrichGeo,
-  geoLoading
+  geoLoading,
+  onQuickPreset
 }) => {
   const [showJson, setShowJson] = useState(false);
   const [showMap, setShowMap] = useState(true);
+  const [showCalibration, setShowCalibration] = useState(false);
   const [lat, setLat] = useState(state.location.latitude?.toString() || '19.99');
   const [lng, setLng] = useState(state.location.longitude?.toString() || '73.78');
+
+  const [sliderSoc, setSliderSoc] = useState<number>(state.soil.organic_carbon_percent ?? 0.35);
+  const [sliderRain, setSliderRain] = useState<number>(state.climate.rainfall ?? 450);
+  const [sliderMonoculture, setSliderMonoculture] = useState<boolean>(state.land.monoculture ?? true);
+
+  useEffect(() => {
+    if (state.soil.organic_carbon_percent !== null && state.soil.organic_carbon_percent !== undefined) {
+      setSliderSoc(state.soil.organic_carbon_percent);
+    }
+    if (state.climate.rainfall !== null && state.climate.rainfall !== undefined) {
+      setSliderRain(state.climate.rainfall);
+    }
+    if (state.land.monoculture !== null && state.land.monoculture !== undefined) {
+      setSliderMonoculture(state.land.monoculture);
+    }
+  }, [state]);
+
+  const handleApplyCalibration = () => {
+    const updatedState = {
+      ...state,
+      soil: { ...state.soil, organic_carbon_percent: sliderSoc },
+      climate: { ...state.climate, rainfall: sliderRain },
+      land: { ...state.land, monoculture: sliderMonoculture }
+    };
+    onQuickPreset({
+      name: `Calibrated Parcel (${sliderSoc}% SOC, ${sliderRain}mm Rain, ${sliderMonoculture ? 'Monoculture' : 'Polyculture'})`,
+      ...updatedState
+    });
+  };
 
   const handleGeoSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,6 +157,102 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
         </pre>
       ) : (
         <div className="space-y-3.5 flex-1">
+          {/* Interactive Agronomic Calibration (Sliders for Real-World Lab Values) */}
+          <div className="bg-slate-50/90 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl p-3 space-y-2.5">
+            <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <span className="flex items-center gap-1.5">
+                <Sliders className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                Calibrate Soil & Climate Values
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowCalibration(!showCalibration)}
+                className="text-[11px] text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 flex items-center gap-1 cursor-pointer font-medium"
+              >
+                {showCalibration ? 'Collapse' : 'Adjust Sliders'}
+                {showCalibration ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              </button>
+            </div>
+
+            {showCalibration && (
+              <div className="space-y-3 pt-1 border-t border-slate-200 dark:border-slate-800 text-xs">
+                {/* SOC Slider */}
+                <div>
+                  <div className="flex items-center justify-between text-[11px] mb-1">
+                    <span className="text-slate-600 dark:text-slate-400 font-medium">Soil Organic Carbon (SOC):</span>
+                    <span className={`font-mono font-bold ${sliderSoc < 0.75 ? 'text-red-600 dark:text-red-400' : sliderSoc < 1.2 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                      {sliderSoc.toFixed(2)}% ({sliderSoc < 0.75 ? 'Critical' : sliderSoc < 1.2 ? 'Sub-optimal' : 'Optimal'})
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.1"
+                    max="2.5"
+                    step="0.05"
+                    value={sliderSoc}
+                    onChange={(e) => setSliderSoc(parseFloat(e.target.value))}
+                    className="w-full accent-emerald-600 dark:accent-emerald-400 cursor-pointer h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg"
+                  />
+                  <div className="flex justify-between text-[9px] text-slate-400 mt-0.5 font-mono">
+                    <span>0.1% (Severe)</span>
+                    <span>0.75% (Threshold)</span>
+                    <span>1.2%+ (Healthy)</span>
+                  </div>
+                </div>
+
+                {/* Rainfall Slider */}
+                <div>
+                  <div className="flex items-center justify-between text-[11px] mb-1">
+                    <span className="text-slate-600 dark:text-slate-400 font-medium">Annual Precipitation:</span>
+                    <span className={`font-mono font-bold ${sliderRain < 500 ? 'text-amber-600 dark:text-amber-400' : 'text-cyan-600 dark:text-cyan-400'}`}>
+                      {sliderRain} mm ({sliderRain < 500 ? 'Dryland' : 'Adequate'})
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="150"
+                    max="1400"
+                    step="25"
+                    value={sliderRain}
+                    onChange={(e) => setSliderRain(parseInt(e.target.value))}
+                    className="w-full accent-cyan-600 dark:accent-cyan-400 cursor-pointer h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg"
+                  />
+                  <div className="flex justify-between text-[9px] text-slate-400 mt-0.5 font-mono">
+                    <span>150mm</span>
+                    <span>500mm (Aridity Line)</span>
+                    <span>1400mm</span>
+                  </div>
+                </div>
+
+                {/* Monoculture Toggle */}
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">Cropping Regimen:</span>
+                  <button
+                    type="button"
+                    onClick={() => setSliderMonoculture(!sliderMonoculture)}
+                    className={`text-[11px] px-2.5 py-1 rounded-lg border font-medium transition cursor-pointer ${
+                      sliderMonoculture
+                        ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800'
+                        : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                    }`}
+                  >
+                    {sliderMonoculture ? '🌾 Single Crop Monoculture' : '🌿 Diversified Polyculture'}
+                  </button>
+                </div>
+
+                {/* Apply Button */}
+                <button
+                  type="button"
+                  onClick={handleApplyCalibration}
+                  className="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 rounded-lg flex items-center justify-center gap-1.5 transition cursor-pointer shadow-xs"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Apply Lab Calibration & Re-Analyze
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* Interactive Geospatial Map & Coordinates */}
           <div className="bg-slate-50/80 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3">
             <div className="flex items-center justify-between text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">

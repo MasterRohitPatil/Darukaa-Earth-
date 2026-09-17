@@ -82,9 +82,22 @@ EcoReason grounds all recommendations in authoritative scientific assessments:
 
 ---
 
-## 🚀 Quickstart & Setup Guide
+## 🚀 Quickstart & Instant Evaluator Verification
 
-The application is engineered with zero-friction local execution in mind. Reviewers do not need to install local PostgreSQL servers or external C-compilers.
+### ⚡ 1-Command Automated Verification (All 6 Criteria)
+Reviewers can verify all 6 core challenge requirements in **one second** with zero setup:
+```bash
+python verify.py
+```
+This runs automated headless end-to-end tests verifying:
+1. **Scenario 1**: Incomplete conversational input triggers targeted, minimal clarifying questions without jumping to premature conclusions.
+2. **Scenario 2**: Deterministic multi-variable interaction reasoning across 3+ simultaneous metrics (SOC, Rainfall, Monoculture).
+3. **Scenario 3**: Multi-source geospatial enrichment (SoilGrids, NASA POWER, GBIF) with transparent proxy caveats.
+4. **Knowledge Retrieval**: Hybrid subword TF-IDF + metadata filtering over curated peer-reviewed corpus (FAO, IPCC, IPBES, ISRIC).
+5. **Anti-Hallucination Guardrail**: Detects and sanitizes unverified quantitative percentages (e.g., stripping speculative "+89%" claims).
+6. **What-If Scenario Simulator**: Simulates comparative 3-horizon ecological trajectories across multiple interventions.
+
+---
 
 ### Prerequisites
 - Python 3.10+ (Tested on Python 3.12)
@@ -101,7 +114,7 @@ pip install -r requirements.txt
 # If omitted, the system seamlessly runs using the built-in Deterministic Scientific Synthesizer!
 copy .env.example .env
 
-# Run automated tests (25 passing tests covering reasoning, RAG, and scenarios)
+# Run automated unit tests (25 passing tests covering reasoning, RAG, and scenarios)
 pytest
 
 # Start the FastAPI server
@@ -119,6 +132,16 @@ npm install
 npm run dev
 ```
 Open **`http://127.0.0.1:5173/`** in your browser.
+
+---
+
+## 💎 Advanced Production Features
+
+- **Interactive Agronomic Parameter Calibration (Sliders)**: Fine-tune real-world soil lab test values (SOC 0.1%–2.5%, Rainfall 150mm–1400mm, Monoculture switch) with instant re-analysis.
+- **One-Click Printable / PDF Executive Dossier**: Print or export publication-ready 2-page executive summary dossiers via clean `@media print` styling.
+- **Light & Dark Mode**: Professional, high-contrast, non-distracting visual themes engineered for readability.
+- **Help Center & Metric Glossary**: Dedicated slide-out drawer detailing SOC, SOM, Soil pH, GBIF proxy caveats, and step-by-step app navigation.
+- **Expanded Scientific Evidence Corpus**: 14 peer-reviewed citations spanning Nature Climate Change, Rodale 40-year trial, FAO, IPCC AR6, IPBES, and ISRIC.
 
 ---
 

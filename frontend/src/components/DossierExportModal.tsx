@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { EnvironmentalState, RecommendationContract, ReasoningStep } from '../types';
-import { X, FileText, Copy, Download, Check } from 'lucide-react';
+import { X, FileText, Copy, Download, Check, Printer } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -138,6 +138,14 @@ export const DossierExportModal: React.FC<Props> = ({
           </span>
           <div className="flex items-center gap-2">
             <button
+              onClick={() => window.print()}
+              className="text-xs px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/80 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800 flex items-center gap-1.5 transition cursor-pointer font-medium"
+              title="Print or Save as PDF"
+            >
+              <Printer className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+              Print / Save PDF
+            </button>
+            <button
               onClick={handleCopy}
               className="text-xs px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition cursor-pointer font-medium"
             >
@@ -155,7 +163,7 @@ export const DossierExportModal: React.FC<Props> = ({
         </div>
 
         {/* Dossier Preview */}
-        <div className="p-6 overflow-y-auto flex-1 bg-slate-50 dark:bg-slate-950/70 font-mono text-xs text-slate-800 dark:text-slate-300 whitespace-pre-wrap leading-relaxed border-t border-slate-100 dark:border-transparent">
+        <div className="printable-dossier p-6 overflow-y-auto flex-1 bg-slate-50 dark:bg-slate-950/70 font-mono text-xs text-slate-800 dark:text-slate-300 whitespace-pre-wrap leading-relaxed border-t border-slate-100 dark:border-transparent">
           {generateDossierText()}
         </div>
       </div>
