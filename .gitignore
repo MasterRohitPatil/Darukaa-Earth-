@@ -39,3 +39,8 @@ frontend/node_modules/
 .vscode/
 .idea/
 *.swp
+
+# Private Executive Field Guides & Personal Documentation
+EcoReason_Complete_Executive_Guide.pdf
+EcoReason_Executive_Guide.html
+generate_pdf_guide.py
