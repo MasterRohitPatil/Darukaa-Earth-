@@ -35,13 +35,10 @@ export function App() {
   const [completenessScore, setCompletenessScore] = useState<number>(0);
   const [geminiActive, setGeminiActive] = useState<boolean>(false);
   
-  // Open guide automatically on first visit so users understand the system immediately
-  const [isHelpOpen, setIsHelpOpen] = useState<boolean>(() => {
-    return localStorage.getItem('ecoreason_help_seen') !== 'true';
-  });
+  // Always open guide on website load/reload so the user reads the guide first
+  const [isHelpOpen, setIsHelpOpen] = useState<boolean>(true);
 
   const handleCloseHelp = () => {
-    localStorage.setItem('ecoreason_help_seen', 'true');
     setIsHelpOpen(false);
   };
 
