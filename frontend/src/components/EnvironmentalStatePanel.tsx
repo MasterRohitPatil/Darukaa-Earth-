@@ -39,6 +39,9 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
   const [sliderMonoculture, setSliderMonoculture] = useState<boolean>(state.land.monoculture ?? true);
   const [sliderCrop, setSliderCrop] = useState<string>(state.land.crop || 'cotton');
 
+  const [selectedLat, setSelectedLat] = useState<number>(state.location.latitude ?? 19.99);
+  const [selectedLng, setSelectedLng] = useState<number>(state.location.longitude ?? 73.78);
+
   useEffect(() => {
     if (state.soil.organic_carbon_percent !== null && state.soil.organic_carbon_percent !== undefined) {
       setSliderSoc(state.soil.organic_carbon_percent);
@@ -51,6 +54,12 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
     }
     if (state.land.crop) {
       setSliderCrop(state.land.crop);
+    }
+    if (state.location.latitude !== null && state.location.latitude !== undefined) {
+      setSelectedLat(state.location.latitude);
+    }
+    if (state.location.longitude !== null && state.location.longitude !== undefined) {
+      setSelectedLng(state.location.longitude);
     }
   }, [state]);
 
@@ -374,13 +383,16 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
             </div>
           )}
 
-          {/* TAB 2: LOCATION & MAP (EXPANSIVE MAP CANVAS, NO PRESET CLUTTER, ZERO SCROLLING) */}
+          {/* TAB 2: LOCATION & MAP (EXPANSIVE MAP CANVAS, NO PRESET CLUTTER) */}
           {activeTab === 'location' && (
-            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            <div className="flex-1 flex flex-col min-h-0 overflow-y-auto pr-0.5 space-y-2">
               <InteractiveMap
-                latitude={state.location.latitude}
-                longitude={state.location.longitude}
-                onSelectCoordinates={() => {}}
+                latitude={selectedLat}
+                longitude={selectedLng}
+                onSelectCoordinates={(newLat, newLng) => {
+                  setSelectedLat(newLat);
+                  setSelectedLng(newLng);
+                }}
                 onLocateAndAnalyze={handleLocateAndAnalyze}
                 isLoading={geoLoading}
                 regionName={state.location.region}

@@ -42,6 +42,24 @@ export const InteractiveMap: React.FC<Props> = ({
   const [crop, setCrop] = useState<string>(targetCrop);
   const [isCustomCrop, setIsCustomCrop] = useState(false);
 
+  // Coordinates inputs
+  const currentLat = latitude ?? 19.99;
+  const currentLng = longitude ?? 73.78;
+  const [latInput, setLatInput] = useState<string>(currentLat.toFixed(4));
+  const [lngInput, setLngInput] = useState<string>(currentLng.toFixed(4));
+
+  useEffect(() => {
+    if (latitude !== null && latitude !== undefined) {
+      setLatInput(latitude.toFixed(4));
+    }
+  }, [latitude]);
+
+  useEffect(() => {
+    if (longitude !== null && longitude !== undefined) {
+      setLngInput(longitude.toFixed(4));
+    }
+  }, [longitude]);
+
   useEffect(() => {
     if (targetCrop) {
       setCrop(targetCrop);
@@ -57,8 +75,21 @@ export const InteractiveMap: React.FC<Props> = ({
     if (onCropChange) onCropChange(c);
   };
 
-  const currentLat = latitude ?? 19.99;
-  const currentLng = longitude ?? 73.78;
+  const handleLatChange = (val: string) => {
+    setLatInput(val);
+    const parsed = parseFloat(val);
+    if (!isNaN(parsed) && parsed >= -90 && parsed <= 90) {
+      onSelectCoordinates(parsed, currentLng);
+    }
+  };
+
+  const handleLngChange = (val: string) => {
+    setLngInput(val);
+    const parsed = parseFloat(val);
+    if (!isNaN(parsed) && parsed >= -180 && parsed <= 180) {
+      onSelectCoordinates(currentLat, parsed);
+    }
+  };
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -67,7 +98,7 @@ export const InteractiveMap: React.FC<Props> = ({
       // Initialize map centered on India
       const map = L.map(mapContainerRef.current, {
         center: [currentLat, currentLng],
-        zoom: 6,
+        zoom: 7,
         zoomControl: false
       });
 
@@ -97,11 +128,15 @@ export const InteractiveMap: React.FC<Props> = ({
       const marker = L.marker([currentLat, currentLng], { icon: customIcon }).addTo(map);
       markerRef.current = marker;
 
-      // Handle map clicks
+      // Handle map clicks — reactive coordinate update
       map.on('click', (e: L.LeafletMouseEvent) => {
-        const { lat, lng } = e.latlng;
+        const newLat = Number(e.latlng.lat.toFixed(4));
+        const newLng = Number(e.latlng.lng.toFixed(4));
         setResolvedPlace(null);
-        onSelectCoordinates(Number(lat.toFixed(4)), Number(lng.toFixed(4)));
+        setLatInput(newLat.toString());
+        setLngInput(newLng.toString());
+        marker.setLatLng([newLat, newLng]);
+        onSelectCoordinates(newLat, newLng);
       });
 
       mapInstanceRef.current = map;
@@ -133,6 +168,8 @@ export const InteractiveMap: React.FC<Props> = ({
     try {
       const res = await api.lookupPincode(pincodeQuery.trim());
       setResolvedPlace(res.display_name || res.region);
+      setLatInput(res.latitude.toFixed(4));
+      setLngInput(res.longitude.toFixed(4));
       onSelectCoordinates(res.latitude, res.longitude);
       if (mapInstanceRef.current && markerRef.current) {
         markerRef.current.setLatLng([res.latitude, res.longitude]);
@@ -147,8 +184,10 @@ export const InteractiveMap: React.FC<Props> = ({
 
   const handleAnalyzeSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    let targetLat = currentLat;
-    let targetLng = currentLng;
+    let targetLat = parseFloat(latInput);
+    let targetLng = parseFloat(lngInput);
+    if (isNaN(targetLat)) targetLat = currentLat;
+    if (isNaN(targetLng)) targetLng = currentLng;
 
     // If pincode was entered and not yet resolved, resolve it first
     if (pincodeQuery.trim() && (!resolvedPlace || !resolvedPlace.includes(pincodeQuery.trim()))) {
@@ -159,6 +198,8 @@ export const InteractiveMap: React.FC<Props> = ({
         setResolvedPlace(res.display_name || res.region);
         targetLat = res.latitude;
         targetLng = res.longitude;
+        setLatInput(targetLat.toFixed(4));
+        setLngInput(targetLng.toFixed(4));
         onSelectCoordinates(res.latitude, res.longitude);
       } catch (err: any) {
         setPincodeError(err.message || 'Location not found');
@@ -177,8 +218,8 @@ export const InteractiveMap: React.FC<Props> = ({
   };
 
   return (
-    <div className="flex flex-col h-full space-y-2">
-      {/* 1. Compact Unified Search Bar (PIN/City + Find Pin) */}
+    <div className="flex flex-col space-y-2">
+      {/* 1. PIN / City Search */}
       <form onSubmit={handlePincodeSubmit} className="space-y-1">
         <div className="flex items-center gap-1.5">
           <div className="relative flex-1">
@@ -215,35 +256,63 @@ export const InteractiveMap: React.FC<Props> = ({
         )}
       </form>
 
-      {/* 2. Compact Crop & Action Bar (One sleek row without presets clutter) */}
+      {/* 2. Interactive Latitude / Longitude Display & Edit Bar */}
+      <div className="flex items-center justify-between gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100/90 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-[11px]">
+        <div className="flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-300 shrink-0">
+          <MapPin className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
+          <span>Coordinates:</span>
+        </div>
+        <div className="flex items-center gap-1.5 font-mono">
+          <div className="flex items-center gap-1 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-300 dark:border-slate-700">
+            <span className="text-[9px] text-slate-400 font-sans">Lat</span>
+            <input
+              type="number"
+              step="0.0001"
+              value={latInput}
+              onChange={(e) => handleLatChange(e.target.value)}
+              className="w-16 bg-transparent text-slate-900 dark:text-slate-100 font-bold text-xs focus:outline-none"
+              title="Click map or type latitude"
+            />
+          </div>
+          <div className="flex items-center gap-1 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-300 dark:border-slate-700">
+            <span className="text-[9px] text-slate-400 font-sans">Lng</span>
+            <input
+              type="number"
+              step="0.0001"
+              value={lngInput}
+              onChange={(e) => handleLngChange(e.target.value)}
+              className="w-16 bg-transparent text-slate-900 dark:text-slate-100 font-bold text-xs focus:outline-none"
+              title="Click map or type longitude"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Target Crop & Analyze Action */}
       <div className="bg-slate-50 dark:bg-slate-950 p-2 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1.5">
         <div className="flex items-center justify-between gap-1 text-[11px]">
           <span className="text-slate-600 dark:text-slate-400 font-semibold shrink-0">Target Crop:</span>
           
-          {/* Quick Crop Selector Dropdown + Custom Button */}
-          <div className="flex items-center gap-1 flex-1 justify-end">
-            <select
-              value={isCustomCrop ? 'custom' : crop.toLowerCase()}
-              onChange={(e) => {
-                if (e.target.value === 'custom') {
-                  setIsCustomCrop(true);
-                } else {
-                  handleCropSelect(e.target.value);
-                }
-              }}
-              className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-[11px] font-semibold rounded-md px-2 py-1 focus:outline-emerald-500 capitalize cursor-pointer"
-            >
-              {COMMON_CROPS.map((c) => (
-                <option key={c} value={c}>
-                  {c.charAt(0).toUpperCase() + c.slice(1)}
-                </option>
-              ))}
-              <option value="custom">✏️ Other Crop...</option>
-            </select>
-          </div>
+          <select
+            value={isCustomCrop ? 'custom' : crop.toLowerCase()}
+            onChange={(e) => {
+              if (e.target.value === 'custom') {
+                setIsCustomCrop(true);
+              } else {
+                handleCropSelect(e.target.value);
+              }
+            }}
+            className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-[11px] font-semibold rounded-md px-2 py-1 focus:outline-emerald-500 capitalize cursor-pointer"
+          >
+            {COMMON_CROPS.map((c) => (
+              <option key={c} value={c}>
+                {c.charAt(0).toUpperCase() + c.slice(1)}
+              </option>
+            ))}
+            <option value="custom">✏️ Other Crop...</option>
+          </select>
         </div>
 
-        {/* Custom Crop input if selected */}
         {isCustomCrop && (
           <input
             type="text"
@@ -257,7 +326,6 @@ export const InteractiveMap: React.FC<Props> = ({
           />
         )}
 
-        {/* Primary Action Button: Locate & Analyze Parcel */}
         <button
           type="button"
           onClick={() => handleAnalyzeSubmit()}
@@ -273,21 +341,21 @@ export const InteractiveMap: React.FC<Props> = ({
         </button>
       </div>
 
-      {/* 3. The Map Canvas — Primary USP with generous height and zero scrolling! */}
-      <div className="relative rounded-xl overflow-hidden border-2 border-slate-300 dark:border-slate-700 flex-1 min-h-[260px] shadow-sm">
+      {/* 4. Framed Map Canvas (Clean 210px height, fully visible, never abruptly cut!) */}
+      <div className="relative rounded-xl overflow-hidden border-2 border-slate-300 dark:border-slate-700 h-[210px] w-full shadow-sm shrink-0">
         <div ref={mapContainerRef} className="w-full h-full" />
         
         {/* Helper overlay tag */}
-        <div className="absolute top-2 left-2 z-[400] bg-slate-900/90 backdrop-blur px-2.5 py-1 rounded-lg text-[10px] text-slate-300 border border-slate-700 flex items-center gap-1.5 pointer-events-none shadow-md">
+        <div className="absolute top-2 left-2 z-[400] bg-slate-900/90 backdrop-blur px-2 py-1 rounded-lg text-[10px] text-slate-300 border border-slate-700 flex items-center gap-1.5 pointer-events-none shadow-md">
           <Navigation className="w-3 h-3 text-emerald-400 animate-pulse" />
-          Click map to pin coordinates
+          Click anywhere to pin coordinates
         </div>
 
         {/* Wide Screen Expansion Button */}
         <button
           type="button"
           onClick={() => setIsWideModalOpen(true)}
-          className="absolute top-2 right-2 z-[400] bg-cyan-600 hover:bg-cyan-700 text-white backdrop-blur px-2.5 py-1 rounded-lg text-[10px] border border-cyan-500 flex items-center gap-1 shadow-md cursor-pointer transition font-bold"
+          className="absolute top-2 right-2 z-[400] bg-cyan-600 hover:bg-cyan-700 text-white backdrop-blur px-2 py-1 rounded-lg text-[10px] border border-cyan-500 flex items-center gap-1 shadow-md cursor-pointer transition font-bold"
           title="Open wide full-screen map modal across your whole screen"
         >
           <Expand className="w-3 h-3" />
@@ -306,9 +374,13 @@ export const InteractiveMap: React.FC<Props> = ({
       <WideMapModal
         isOpen={isWideModalOpen}
         onClose={() => setIsWideModalOpen(false)}
-        latitude={latitude}
-        longitude={longitude}
-        onSelectCoordinates={onSelectCoordinates}
+        latitude={currentLat}
+        longitude={currentLng}
+        onSelectCoordinates={(lat, lng) => {
+          setLatInput(lat.toFixed(4));
+          setLngInput(lng.toFixed(4));
+          onSelectCoordinates(lat, lng);
+        }}
         isLoading={isLoading}
         regionName={regionName}
       />
