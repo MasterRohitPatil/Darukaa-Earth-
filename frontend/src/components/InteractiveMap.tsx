@@ -8,22 +8,28 @@ interface Props {
   latitude: number | null | undefined;
   longitude: number | null | undefined;
   onSelectCoordinates: (lat: number, lng: number) => void;
+  onLocateAndAnalyze?: (lat: number, lng: number, crop: string) => void;
   isLoading: boolean;
   regionName?: string | null;
+  targetCrop?: string;
+  onCropChange?: (crop: string) => void;
 }
 
 const REGIONAL_PRESETS = [
-  { name: '🍇 Nashik (Semi-Arid)', lat: 19.99, lng: 73.78, pin: '422001' },
-  { name: '🌾 Ludhiana (Punjab Wheat)', lat: 30.90, lng: 75.85, pin: '141001' },
-  { name: '🌱 Warangal (Telangana Dryland)', lat: 17.38, lng: 78.48, pin: '506001' },
+  { name: '🍇 Nashik (Semi-Arid)', lat: 19.99, lng: 73.78, pin: '422001', crop: 'grapes' },
+  { name: '🌾 Ludhiana (Punjab Wheat)', lat: 30.90, lng: 75.85, pin: '141001', crop: 'wheat' },
+  { name: '🌱 Warangal (Telangana Cotton)', lat: 17.38, lng: 78.48, pin: '506001', crop: 'cotton' },
 ];
 
 export const InteractiveMap: React.FC<Props> = ({
   latitude,
   longitude,
   onSelectCoordinates,
+  onLocateAndAnalyze,
   isLoading,
-  regionName
+  regionName,
+  targetCrop = 'cotton',
+  onCropChange
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -35,6 +41,20 @@ export const InteractiveMap: React.FC<Props> = ({
   const [pincodeError, setPincodeError] = useState<string | null>(null);
   const [pincodeSearching, setPincodeSearching] = useState(false);
   const [resolvedPlace, setResolvedPlace] = useState<string | null>(null);
+
+  // Selected crop state
+  const [crop, setCrop] = useState<string>(targetCrop);
+
+  useEffect(() => {
+    if (targetCrop) {
+      setCrop(targetCrop);
+    }
+  }, [targetCrop]);
+
+  const handleCropSelect = (c: string) => {
+    setCrop(c);
+    if (onCropChange) onCropChange(c);
+  };
 
   const currentLat = latitude ?? 19.99;
   const currentLng = longitude ?? 73.78;
@@ -124,6 +144,37 @@ export const InteractiveMap: React.FC<Props> = ({
     }
   };
 
+  const handleAnalyzeSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    let targetLat = currentLat;
+    let targetLng = currentLng;
+
+    // If pincode was entered and not yet resolved, resolve it first
+    if (pincodeQuery.trim() && (!resolvedPlace || !resolvedPlace.includes(pincodeQuery.trim()))) {
+      setPincodeSearching(true);
+      setPincodeError(null);
+      try {
+        const res = await api.lookupPincode(pincodeQuery.trim());
+        setResolvedPlace(res.display_name || res.region);
+        targetLat = res.latitude;
+        targetLng = res.longitude;
+        onSelectCoordinates(res.latitude, res.longitude);
+      } catch (err: any) {
+        setPincodeError(err.message || 'Location not found');
+        setPincodeSearching(false);
+        return;
+      } finally {
+        setPincodeSearching(false);
+      }
+    }
+
+    if (onLocateAndAnalyze) {
+      onLocateAndAnalyze(targetLat, targetLng, crop);
+    } else {
+      onSelectCoordinates(targetLat, targetLng);
+    }
+  };
+
   return (
     <div className="space-y-2.5">
       {/* Search Bar for Indian PIN Code or Place Name */}
@@ -134,7 +185,7 @@ export const InteractiveMap: React.FC<Props> = ({
               type="text"
               value={pincodeQuery}
               onChange={(e) => setPincodeQuery(e.target.value)}
-              placeholder="Enter 6-digit Indian PIN (e.g. 422001) or City..."
+              placeholder="Enter 6-digit Indian PIN (e.g. 425401 Amalner)..."
               className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded-lg pl-7 pr-2.5 py-1.5 focus:outline-none focus:border-cyan-500 placeholder:text-slate-400"
             />
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2 top-2 pointer-events-none" />
@@ -145,7 +196,7 @@ export const InteractiveMap: React.FC<Props> = ({
             className="px-2.5 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold rounded-lg transition disabled:opacity-50 cursor-pointer shrink-0 shadow-2xs"
             title="Locate coordinates using Indian PIN Code"
           >
-            {pincodeSearching ? 'Finding...' : 'Locate'}
+            {pincodeSearching ? 'Finding...' : 'Find Pin'}
           </button>
         </div>
 
@@ -163,6 +214,53 @@ export const InteractiveMap: React.FC<Props> = ({
         )}
       </form>
 
+      {/* Target Crop Selector Before Sending to AI */}
+      <div className="bg-slate-100/80 dark:bg-slate-950/70 p-2 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1.5">
+        <div className="flex items-center justify-between text-[11px]">
+          <span className="text-slate-600 dark:text-slate-400 font-semibold">Select Target Crop:</span>
+          <span className="font-bold text-emerald-600 dark:text-emerald-400 capitalize">
+            {crop}
+          </span>
+        </div>
+        <div className="flex gap-1 flex-wrap">
+          {['cotton', 'banana', 'wheat', 'grapes', 'maize', 'soybean', 'sugarcane'].map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => handleCropSelect(c)}
+              className={`text-[10px] px-2 py-0.5 rounded-md border capitalize font-medium transition cursor-pointer ${
+                crop.toLowerCase() === c
+                  ? 'bg-emerald-600 text-white border-emerald-600 font-bold shadow-2xs'
+                  : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-emerald-400'
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+        <input
+          type="text"
+          placeholder="Or type custom crop (e.g. jowar, bajra, turmeric)..."
+          value={crop}
+          onChange={(e) => handleCropSelect(e.target.value)}
+          className="w-full text-xs px-2 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-emerald-500"
+        />
+
+        {/* Primary Action Button: Locate & Analyze Parcel */}
+        <button
+          type="button"
+          onClick={() => handleAnalyzeSubmit()}
+          disabled={isLoading || pincodeSearching}
+          className="w-full mt-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-1.5 transition cursor-pointer shadow-sm disabled:opacity-50"
+        >
+          {isLoading ? (
+            <span>Enriching Soil & Climate Data...</span>
+          ) : (
+            <span>🚀 Locate & Analyze Parcel ({crop})</span>
+          )}
+        </button>
+      </div>
+
       {/* Header: 2-3 Indian Presets & Full-Screen Wide View Button */}
       <div className="flex items-center justify-between gap-1 flex-wrap">
         <div className="flex items-center gap-1 flex-wrap">
@@ -174,6 +272,7 @@ export const InteractiveMap: React.FC<Props> = ({
               onClick={() => {
                 setPincodeQuery(preset.pin);
                 setResolvedPlace(preset.name);
+                handleCropSelect(preset.crop);
                 onSelectCoordinates(preset.lat, preset.lng);
               }}
               className="text-[10px] bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-300 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700 transition cursor-pointer font-medium"

@@ -130,18 +130,19 @@ export function App() {
   };
 
   // Geo enrichment handler
-  const handleEnrichGeo = async (latitude: number, longitude: number) => {
+  const handleEnrichGeo = async (latitude: number, longitude: number, customCrop?: string) => {
     setGeoLoading(true);
     try {
       const geoData = await api.enrichCoordinates(latitude, longitude);
+      const selectedCrop = customCrop && customCrop.trim() ? customCrop.trim() : (geoData.land.crop || 'cotton');
       
-      const enrichedMsg = `Identified coordinates (${latitude.toFixed(2)}, ${longitude.toFixed(2)}) in ${geoData.location.region}. Enriched soil organic carbon (${geoData.soil.organic_carbon_percent}%), rainfall (${geoData.climate.rainfall}mm), and crop profile (${geoData.land.crop}). Data sources: ${geoData.data_sources.join(', ')}.`;
+      const enrichedMsg = `Identified coordinates (${latitude.toFixed(2)}, ${longitude.toFixed(2)}) in ${geoData.location.region}. Enriched soil organic carbon (${geoData.soil.organic_carbon_percent}%), rainfall (${geoData.climate.rainfall}mm), and target crop (${selectedCrop}). Data sources: ${geoData.data_sources.join(', ')}.`;
       
       handleSendMessage(enrichedMsg, {
         location: geoData.location,
         soil: geoData.soil,
         climate: geoData.climate,
-        land: geoData.land,
+        land: { ...geoData.land, crop: selectedCrop },
         biodiversity: geoData.biodiversity,
         human_impact: geoData.human_impact
       });
