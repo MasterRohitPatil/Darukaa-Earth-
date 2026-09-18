@@ -385,7 +385,7 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
 
           {/* TAB 2: LOCATION & MAP (EXPANSIVE MAP CANVAS, NO PRESET CLUTTER) */}
           {activeTab === 'location' && (
-            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            <div className="flex-1 flex flex-col min-h-0 overflow-y-auto pr-1 space-y-2">
               <InteractiveMap
                 latitude={selectedLat}
                 longitude={selectedLng}

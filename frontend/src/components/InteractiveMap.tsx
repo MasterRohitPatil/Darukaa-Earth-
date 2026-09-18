@@ -324,8 +324,8 @@ export const InteractiveMap: React.FC<Props> = ({
         </button>
       </div>
 
-      {/* 3. Hero Map Canvas — Expands to fill all available space, zero cut off! */}
-      <div className="relative rounded-xl overflow-hidden border-2 border-slate-300 dark:border-slate-700 flex-1 min-h-[200px] w-full shadow-sm">
+      {/* 3. Hero Map Canvas (Generous 250px height, smoothly scrollable, never cut off) */}
+      <div className="relative rounded-xl overflow-hidden border-2 border-slate-300 dark:border-slate-700 h-[250px] w-full shrink-0 shadow-sm">
         <div ref={mapContainerRef} className="w-full h-full" />
         
         {/* Helper overlay tag */}
