@@ -138,10 +138,14 @@ class EnvironmentalStateManager:
             extracted["climate"]["seasonality"] = "tropical monsoon"
 
         # 4. Land Use & Crop Types
-        known_crops = ["grapes", "grapevine", "vineyard", "wheat", "cotton", "soybean", "rice", "paddy", "maize", "corn", "sugarcane", "pulses", "mustard"]
+        known_crops = [
+            "grapes", "grapevine", "vineyard", "wheat", "cotton", "soybean", "rice", "paddy",
+            "maize", "corn", "sugarcane", "banana", "groundnut", "peanut", "millet",
+            "jowar", "sorghum", "bajra", "pulses", "mustard", "onion", "chili", "chilli"
+        ]
         for crop in known_crops:
             if crop in lower:
-                extracted["land"]["crop"] = "grapes" if crop in ["grapevine", "vineyard"] else crop
+                extracted["land"]["crop"] = "grapes" if crop in ["grapevine", "vineyard"] else ("rice" if crop == "paddy" else ("maize" if crop == "corn" else crop))
                 extracted["land"]["land_use"] = "cropland"
                 break
 

@@ -42,6 +42,7 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
   const [sliderSoc, setSliderSoc] = useState<number>(state.soil.organic_carbon_percent ?? 0.35);
   const [sliderRain, setSliderRain] = useState<number>(state.climate.rainfall ?? 450);
   const [sliderMonoculture, setSliderMonoculture] = useState<boolean>(state.land.monoculture ?? true);
+  const [sliderCrop, setSliderCrop] = useState<string>(state.land.crop || 'cotton');
 
   useEffect(() => {
     if (state.soil.organic_carbon_percent !== null && state.soil.organic_carbon_percent !== undefined) {
@@ -53,6 +54,9 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
     if (state.land.monoculture !== null && state.land.monoculture !== undefined) {
       setSliderMonoculture(state.land.monoculture);
     }
+    if (state.land.crop) {
+      setSliderCrop(state.land.crop);
+    }
   }, [state]);
 
   const handleApplyCalibration = () => {
@@ -60,10 +64,10 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
       ...state,
       soil: { ...state.soil, organic_carbon_percent: sliderSoc },
       climate: { ...state.climate, rainfall: sliderRain },
-      land: { ...state.land, monoculture: sliderMonoculture }
+      land: { ...state.land, monoculture: sliderMonoculture, crop: sliderCrop }
     };
     onQuickPreset({
-      name: `Calibrated Parcel (${sliderSoc}% SOC, ${sliderRain}mm Rain, ${sliderMonoculture ? 'Monoculture' : 'Polyculture'})`,
+      name: `Calibrated Parcel (${sliderCrop}, ${sliderSoc}% SOC, ${sliderRain}mm Rain, ${sliderMonoculture ? 'Monoculture' : 'Polyculture'})`,
       ...updatedState
     });
   };
@@ -222,6 +226,39 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
                     <span>500mm (Aridity Line)</span>
                     <span>1400mm</span>
                   </div>
+                </div>
+
+                {/* Primary Crop Selector */}
+                <div>
+                  <div className="flex items-center justify-between text-[11px] mb-1">
+                    <span className="text-slate-600 dark:text-slate-400 font-medium">Primary Crop:</span>
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400 capitalize">
+                      {sliderCrop || 'Not specified'}
+                    </span>
+                  </div>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {['cotton', 'banana', 'wheat', 'grapes', 'maize', 'soybean', 'sugarcane'].map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setSliderCrop(c)}
+                        className={`text-[11px] px-2 py-0.5 rounded-lg border capitalize transition cursor-pointer ${
+                          sliderCrop.toLowerCase() === c
+                            ? 'bg-emerald-600 text-white border-emerald-600 font-semibold shadow-2xs'
+                            : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-emerald-400'
+                        }`}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Or type custom crop (e.g. jowar, pulses, onion)..."
+                    value={sliderCrop}
+                    onChange={(e) => setSliderCrop(e.target.value)}
+                    className="w-full mt-1.5 text-xs px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-emerald-500"
+                  />
                 </div>
 
                 {/* Monoculture Toggle */}
