@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import L from 'leaflet';
-import { Navigation, Expand, Search, MapPin } from 'lucide-react';
+import { Navigation, Expand, Search, MapPin, Sparkles } from 'lucide-react';
 import { WideMapModal } from './WideMapModal';
 import { api } from '../services/api';
 
@@ -15,11 +15,7 @@ interface Props {
   onCropChange?: (crop: string) => void;
 }
 
-const REGIONAL_PRESETS = [
-  { name: '🍇 Nashik (Semi-Arid)', lat: 19.99, lng: 73.78, pin: '422001', crop: 'grapes' },
-  { name: '🌾 Ludhiana (Punjab Wheat)', lat: 30.90, lng: 75.85, pin: '141001', crop: 'wheat' },
-  { name: '🌱 Warangal (Telangana Cotton)', lat: 17.38, lng: 78.48, pin: '506001', crop: 'cotton' },
-];
+const COMMON_CROPS = ['cotton', 'banana', 'wheat', 'grapes', 'maize', 'soybean', 'sugarcane'];
 
 export const InteractiveMap: React.FC<Props> = ({
   latitude,
@@ -44,15 +40,20 @@ export const InteractiveMap: React.FC<Props> = ({
 
   // Selected crop state
   const [crop, setCrop] = useState<string>(targetCrop);
+  const [isCustomCrop, setIsCustomCrop] = useState(false);
 
   useEffect(() => {
     if (targetCrop) {
       setCrop(targetCrop);
+      if (!COMMON_CROPS.includes(targetCrop.toLowerCase())) {
+        setIsCustomCrop(true);
+      }
     }
   }, [targetCrop]);
 
   const handleCropSelect = (c: string) => {
     setCrop(c);
+    setIsCustomCrop(false);
     if (onCropChange) onCropChange(c);
   };
 
@@ -176,8 +177,8 @@ export const InteractiveMap: React.FC<Props> = ({
   };
 
   return (
-    <div className="space-y-2.5">
-      {/* Search Bar for Indian PIN Code or Place Name */}
+    <div className="flex flex-col h-full space-y-2">
+      {/* 1. Compact Unified Search Bar (PIN/City + Find Pin) */}
       <form onSubmit={handlePincodeSubmit} className="space-y-1">
         <div className="flex items-center gap-1.5">
           <div className="relative flex-1">
@@ -185,8 +186,8 @@ export const InteractiveMap: React.FC<Props> = ({
               type="text"
               value={pincodeQuery}
               onChange={(e) => setPincodeQuery(e.target.value)}
-              placeholder="Enter 6-digit Indian PIN (e.g. 425401 Amalner)..."
-              className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded-lg pl-7 pr-2.5 py-1.5 focus:outline-none focus:border-cyan-500 placeholder:text-slate-400"
+              placeholder="Enter 6-digit Indian PIN (e.g. 425401) or City..."
+              className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded-lg pl-7 pr-2.5 py-1.5 focus:outline-none focus:border-cyan-500 placeholder:text-slate-400 font-medium"
             />
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2 top-2 pointer-events-none" />
           </div>
@@ -194,9 +195,9 @@ export const InteractiveMap: React.FC<Props> = ({
             type="submit"
             disabled={pincodeSearching || !pincodeQuery.trim()}
             className="px-2.5 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold rounded-lg transition disabled:opacity-50 cursor-pointer shrink-0 shadow-2xs"
-            title="Locate coordinates using Indian PIN Code"
+            title="Locate coordinates on map"
           >
-            {pincodeSearching ? 'Finding...' : 'Find Pin'}
+            {pincodeSearching ? 'Locating...' : 'Find Pin'}
           </button>
         </div>
 
@@ -207,104 +208,82 @@ export const InteractiveMap: React.FC<Props> = ({
         )}
 
         {resolvedPlace && (
-          <p className="text-[11px] text-cyan-700 dark:text-cyan-300 m-0 truncate font-medium flex items-center gap-1">
+          <p className="text-[11px] text-cyan-700 dark:text-cyan-300 m-0 truncate font-semibold flex items-center gap-1">
             <MapPin className="w-3 h-3 text-cyan-500 shrink-0" />
             <span>{resolvedPlace}</span>
           </p>
         )}
       </form>
 
-      {/* Target Crop Selector Before Sending to AI */}
-      <div className="bg-slate-100/80 dark:bg-slate-950/70 p-2 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1.5">
-        <div className="flex items-center justify-between text-[11px]">
-          <span className="text-slate-600 dark:text-slate-400 font-semibold">Select Target Crop:</span>
-          <span className="font-bold text-emerald-600 dark:text-emerald-400 capitalize">
-            {crop}
-          </span>
-        </div>
-        <div className="flex gap-1 flex-wrap">
-          {['cotton', 'banana', 'wheat', 'grapes', 'maize', 'soybean', 'sugarcane'].map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => handleCropSelect(c)}
-              className={`text-[10px] px-2 py-0.5 rounded-md border capitalize font-medium transition cursor-pointer ${
-                crop.toLowerCase() === c
-                  ? 'bg-emerald-600 text-white border-emerald-600 font-bold shadow-2xs'
-                  : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-emerald-400'
-              }`}
+      {/* 2. Compact Crop & Action Bar (One sleek row without presets clutter) */}
+      <div className="bg-slate-50 dark:bg-slate-950 p-2 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1.5">
+        <div className="flex items-center justify-between gap-1 text-[11px]">
+          <span className="text-slate-600 dark:text-slate-400 font-semibold shrink-0">Target Crop:</span>
+          
+          {/* Quick Crop Selector Dropdown + Custom Button */}
+          <div className="flex items-center gap-1 flex-1 justify-end">
+            <select
+              value={isCustomCrop ? 'custom' : crop.toLowerCase()}
+              onChange={(e) => {
+                if (e.target.value === 'custom') {
+                  setIsCustomCrop(true);
+                } else {
+                  handleCropSelect(e.target.value);
+                }
+              }}
+              className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-[11px] font-semibold rounded-md px-2 py-1 focus:outline-emerald-500 capitalize cursor-pointer"
             >
-              {c}
-            </button>
-          ))}
+              {COMMON_CROPS.map((c) => (
+                <option key={c} value={c}>
+                  {c.charAt(0).toUpperCase() + c.slice(1)}
+                </option>
+              ))}
+              <option value="custom">✏️ Other Crop...</option>
+            </select>
+          </div>
         </div>
-        <input
-          type="text"
-          placeholder="Or type custom crop (e.g. jowar, bajra, turmeric)..."
-          value={crop}
-          onChange={(e) => handleCropSelect(e.target.value)}
-          className="w-full text-xs px-2 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-emerald-500"
-        />
+
+        {/* Custom Crop input if selected */}
+        {isCustomCrop && (
+          <input
+            type="text"
+            placeholder="Type custom crop (e.g. jowar, bajra, turmeric)..."
+            value={crop}
+            onChange={(e) => {
+              setCrop(e.target.value);
+              if (onCropChange) onCropChange(e.target.value);
+            }}
+            className="w-full text-xs px-2 py-1 rounded-md border border-emerald-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-emerald-500"
+          />
+        )}
 
         {/* Primary Action Button: Locate & Analyze Parcel */}
         <button
           type="button"
           onClick={() => handleAnalyzeSubmit()}
           disabled={isLoading || pincodeSearching}
-          className="w-full mt-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-1.5 transition cursor-pointer shadow-sm disabled:opacity-50"
+          className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-1.5 transition cursor-pointer shadow-sm disabled:opacity-50"
         >
+          <Sparkles className="w-3.5 h-3.5 animate-pulse" />
           {isLoading ? (
-            <span>Enriching Soil & Climate Data...</span>
+            <span>Analyzing Parcel Data...</span>
           ) : (
-            <span>🚀 Locate & Analyze Parcel ({crop})</span>
+            <span>Analyze Parcel ({crop})</span>
           )}
         </button>
       </div>
 
-      {/* Header: 2-3 Indian Presets & Full-Screen Wide View Button */}
-      <div className="flex items-center justify-between gap-1 flex-wrap">
-        <div className="flex items-center gap-1 flex-wrap">
-          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Quick Presets:</span>
-          {REGIONAL_PRESETS.map((preset, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => {
-                setPincodeQuery(preset.pin);
-                setResolvedPlace(preset.name);
-                handleCropSelect(preset.crop);
-                onSelectCoordinates(preset.lat, preset.lng);
-              }}
-              className="text-[10px] bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-300 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700 transition cursor-pointer font-medium"
-            >
-              {preset.name}
-            </button>
-          ))}
-        </div>
-
-        {/* Wide Screen View Button (Only expansion option) */}
-        <button
-          type="button"
-          onClick={() => setIsWideModalOpen(true)}
-          className="text-[10px] px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white flex items-center gap-1 font-bold transition cursor-pointer shadow-xs"
-          title="Open wide full-screen map modal across your whole screen"
-        >
-          <Expand className="w-3 h-3" />
-          <span>Wide Screen ⛶</span>
-        </button>
-      </div>
-
-      {/* Map Canvas (Clean Default Standard Height) */}
-      <div className="relative rounded-xl overflow-hidden border border-slate-300 dark:border-slate-800 h-52">
+      {/* 3. The Map Canvas — Primary USP with generous height and zero scrolling! */}
+      <div className="relative rounded-xl overflow-hidden border-2 border-slate-300 dark:border-slate-700 flex-1 min-h-[260px] shadow-sm">
         <div ref={mapContainerRef} className="w-full h-full" />
         
         {/* Helper overlay tag */}
         <div className="absolute top-2 left-2 z-[400] bg-slate-900/90 backdrop-blur px-2.5 py-1 rounded-lg text-[10px] text-slate-300 border border-slate-700 flex items-center gap-1.5 pointer-events-none shadow-md">
           <Navigation className="w-3 h-3 text-emerald-400 animate-pulse" />
-          Click anywhere to select parcel
+          Click map to pin coordinates
         </div>
 
-        {/* Wide Screen pill on overlay */}
+        {/* Wide Screen Expansion Button */}
         <button
           type="button"
           onClick={() => setIsWideModalOpen(true)}
