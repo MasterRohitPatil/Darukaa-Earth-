@@ -31,7 +31,7 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
   geoLoading,
   onQuickPreset
 }) => {
-  const [activeTab, setActiveTab] = useState<'matrix' | 'location' | 'calibrate'>('matrix');
+  const [activeTab, setActiveTab] = useState<'location' | 'matrix' | 'calibrate'>('location');
   const [showJson, setShowJson] = useState(false);
   
   const [sliderSoc, setSliderSoc] = useState<number>(state.soil.organic_carbon_percent ?? 0.35);
@@ -118,28 +118,28 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
 
       {/* 2. RICH COLOR-CODED DIFFERENTIATION BOXES (High-Contrast Thematic Colors!) */}
       <div className="grid grid-cols-4 gap-1.5 my-2">
-        {/* BOX 1: Soil Carbon (Warm Earthy Amber / Terracotta Theme) */}
+        {/* BOX 1: Soil Carbon (Warm Earthy Amber Theme) */}
         <div className="bg-gradient-to-br from-amber-50 to-orange-50/70 dark:from-amber-950/40 dark:to-orange-950/20 p-2 rounded-xl border-2 border-amber-300 dark:border-amber-700/80 text-center shadow-xs">
           <div className="flex items-center justify-center gap-1 text-[9px] uppercase font-bold tracking-wider text-amber-800 dark:text-amber-300">
-            <Compass className="w-2.5 h-2.5 text-amber-600 dark:text-amber-400" />
-            <span>Soil Carbon</span>
+            <Compass className="w-2.5 h-2.5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <span className="truncate">Soil Carbon</span>
           </div>
-          <div className="text-sm font-black text-amber-950 dark:text-amber-100 flex items-center justify-center gap-1 mt-0.5">
-            <span className={`w-2 h-2 rounded-full ${soc !== null && soc !== undefined ? (soc < 0.75 ? 'bg-red-500 animate-pulse' : 'bg-emerald-500') : 'bg-slate-400'}`}></span>
-            {soc !== null && soc !== undefined ? `${soc}%` : '—'}
+          <div className="text-xs sm:text-sm font-black text-amber-950 dark:text-amber-100 flex items-center justify-center gap-1 mt-0.5">
+            <span className={`w-2 h-2 rounded-full shrink-0 ${soc !== null && soc !== undefined ? (soc < 0.75 ? 'bg-red-500 animate-pulse' : 'bg-emerald-500') : 'bg-slate-400'}`}></span>
+            <span>{soc !== null && soc !== undefined ? `${soc}%` : '—'}</span>
           </div>
           <div className="text-[8px] font-bold text-amber-700 dark:text-amber-400 mt-0.5 truncate">
-            {soc !== null && soc !== undefined ? (soc < 0.75 ? '⚠️ Critical Deficit' : 'Optimal SOC') : 'ISRIC Grounded'}
+            {soc !== null && soc !== undefined ? (soc < 0.75 ? 'Critical Deficit' : 'Optimal SOC') : 'ISRIC'}
           </div>
         </div>
 
         {/* BOX 2: Rainfall (Crisp Hydrology Sky Blue Theme) */}
         <div className="bg-gradient-to-br from-sky-50 to-blue-50/70 dark:from-sky-950/40 dark:to-blue-950/20 p-2 rounded-xl border-2 border-sky-300 dark:border-sky-700/80 text-center shadow-xs">
           <div className="flex items-center justify-center gap-1 text-[9px] uppercase font-bold tracking-wider text-sky-800 dark:text-sky-300">
-            <Droplet className="w-2.5 h-2.5 text-sky-600 dark:text-sky-400" />
-            <span>Rainfall</span>
+            <Droplet className="w-2.5 h-2.5 text-sky-600 dark:text-sky-400 shrink-0" />
+            <span className="truncate">Rainfall</span>
           </div>
-          <div className="text-sm font-black text-sky-950 dark:text-sky-100 mt-0.5">
+          <div className="text-xs sm:text-sm font-black text-sky-950 dark:text-sky-100 mt-0.5 truncate">
             {rainfall !== null && rainfall !== undefined ? `${rainfall}mm` : '—'}
           </div>
           <div className="text-[8px] font-bold text-sky-700 dark:text-sky-400 mt-0.5 truncate">
@@ -150,10 +150,10 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
         {/* BOX 3: Target Crop (Agro Emerald Green Theme) */}
         <div className="bg-gradient-to-br from-emerald-50 to-teal-50/70 dark:from-emerald-950/40 dark:to-teal-950/20 p-2 rounded-xl border-2 border-emerald-300 dark:border-emerald-700/80 text-center shadow-xs">
           <div className="flex items-center justify-center gap-1 text-[9px] uppercase font-bold tracking-wider text-emerald-800 dark:text-emerald-300">
-            <Sprout className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" />
-            <span>Target Crop</span>
+            <Sprout className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <span className="truncate">Target Crop</span>
           </div>
-          <div className="text-sm font-black text-emerald-950 dark:text-emerald-100 capitalize truncate mt-0.5">
+          <div className="text-xs sm:text-sm font-black text-emerald-950 dark:text-emerald-100 capitalize truncate mt-0.5">
             {state.land.crop || 'Cotton'}
           </div>
           <div className="text-[8px] font-bold text-emerald-700 dark:text-emerald-400 mt-0.5 truncate">
@@ -164,10 +164,10 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
         {/* BOX 4: GBIF Proxy (Royal Violet / Purple Theme) */}
         <div className="bg-gradient-to-br from-purple-50 to-violet-50/70 dark:from-purple-950/40 dark:to-violet-950/20 p-2 rounded-xl border-2 border-purple-300 dark:border-purple-700/80 text-center shadow-xs">
           <div className="flex items-center justify-center gap-1 text-[9px] uppercase font-bold tracking-wider text-purple-800 dark:text-purple-300">
-            <Activity className="w-2.5 h-2.5 text-purple-600 dark:text-purple-400" />
-            <span>GBIF Proxy</span>
+            <Activity className="w-2.5 h-2.5 text-purple-600 dark:text-purple-400 shrink-0" />
+            <span className="truncate">GBIF Proxy</span>
           </div>
-          <div className="text-sm font-black text-purple-950 dark:text-purple-100 mt-0.5 truncate">
+          <div className="text-xs sm:text-sm font-black text-purple-950 dark:text-purple-100 mt-0.5 truncate">
             {state.biodiversity.species_occurrence_indicator ? `${state.biodiversity.species_occurrence_indicator}` : '—'}
           </div>
           <div className="text-[8px] font-bold text-purple-700 dark:text-purple-400 mt-0.5 truncate">
@@ -176,21 +176,8 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* 3. ZERO-SCROLL 3-TAB SEGMENTED CONTROLLER */}
+      {/* 3. ZERO-SCROLL 3-TAB SEGMENTED CONTROLLER (Location First!) */}
       <div className="flex rounded-xl bg-slate-100 dark:bg-slate-950 p-1 mb-2 border border-slate-200 dark:border-slate-800">
-        <button
-          type="button"
-          onClick={() => setActiveTab('matrix')}
-          className={`flex-1 py-1.5 text-[11px] font-bold rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer ${
-            activeTab === 'matrix'
-              ? 'bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-xs'
-              : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-          }`}
-        >
-          <BarChart3 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-          <span>Scientific Matrix</span>
-        </button>
-
         <button
           type="button"
           onClick={() => setActiveTab('location')}
@@ -202,6 +189,19 @@ export const EnvironmentalStatePanel: React.FC<Props> = ({
         >
           <MapPin className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
           <span>Location & Map</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('matrix')}
+          className={`flex-1 py-1.5 text-[11px] font-bold rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer ${
+            activeTab === 'matrix'
+              ? 'bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-xs'
+              : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+          }`}
+        >
+          <BarChart3 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+          <span>Scientific Matrix</span>
         </button>
 
         <button

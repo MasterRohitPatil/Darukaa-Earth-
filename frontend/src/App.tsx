@@ -184,9 +184,9 @@ export function App() {
       />
 
       {/* Main 3-Panel Cockpit */}
-      <main className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-4 min-h-0 overflow-hidden">
-        {/* Left Panel: Environmental State & Geo Inspector (3 cols) */}
-        <section className="lg:col-span-3 h-full min-h-0">
+      <main className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-2.5 px-3 pb-3 pt-1 min-h-0 overflow-hidden">
+        {/* Left Panel: Environmental State & Geo Inspector (4 cols - expanded for rich KPI visibility) */}
+        <section className="lg:col-span-4 h-full min-h-0">
           <EnvironmentalStatePanel
             state={environmentalState}
             completenessScore={completenessScore}
@@ -196,8 +196,8 @@ export function App() {
           />
         </section>
 
-        {/* Center Panel: Conversational Intelligence Stream (5 cols) */}
-        <section className="lg:col-span-5 h-full min-h-0">
+        {/* Center Panel: Conversational Intelligence Stream (4 cols) */}
+        <section className="lg:col-span-4 h-full min-h-0">
           <ChatArea
             messages={messages}
             onSendMessage={(msg) => handleSendMessage(msg)}
