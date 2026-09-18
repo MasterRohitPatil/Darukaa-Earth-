@@ -27,6 +27,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+async def root():
+    return {
+        "status": "online",
+        "service": "Darukaa Advance AI Model API",
+        "health": "/api/health",
+        "docs": "/docs"
+    }
+
 @app.get("/api/health")
 async def health_check():
     return {
