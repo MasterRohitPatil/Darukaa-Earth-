@@ -14,12 +14,6 @@ interface Props {
   regionName?: string | null;
 }
 
-const REGIONAL_PRESETS = [
-  { name: '🍇 Nashik, Maharashtra (Semi-Arid)', lat: 19.99, lng: 73.78, pin: '422001' },
-  { name: '🌾 Ludhiana, Punjab (Alluvial Wheat)', lat: 30.90, lng: 75.85, pin: '141001' },
-  { name: '🌱 Warangal, Telangana (Red Soil Dryland)', lat: 17.38, lng: 78.48, pin: '506001' },
-];
-
 export const WideMapModal: React.FC<Props> = ({
   isOpen,
   onClose,
@@ -124,20 +118,16 @@ export const WideMapModal: React.FC<Props> = ({
     try {
       const res = await api.lookupPincode(pincodeInput.trim());
       setResolvedPlaceName(res.display_name || res.region);
-      handleSelectPreset(res.latitude, res.longitude);
+      setSelectedLat(res.latitude);
+      setSelectedLng(res.longitude);
+      if (mapInstanceRef.current && markerRef.current) {
+        markerRef.current.setLatLng([res.latitude, res.longitude]);
+        mapInstanceRef.current.setView([res.latitude, res.longitude], 8, { animate: true });
+      }
     } catch (err: any) {
       setSearchError(err.message || 'Location not found');
     } finally {
       setSearchLoading(false);
-    }
-  };
-
-  const handleSelectPreset = (lat: number, lng: number) => {
-    setSelectedLat(lat);
-    setSelectedLng(lng);
-    if (mapInstanceRef.current && markerRef.current) {
-      markerRef.current.setLatLng([lat, lng]);
-      mapInstanceRef.current.setView([lat, lng], 8, { animate: true });
     }
   };
 
@@ -196,10 +186,10 @@ export const WideMapModal: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Toolbar: PIN Code Search & Indian Agricultural Presets */}
-        <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-950/40 flex flex-wrap items-center justify-between gap-3 text-xs">
+        {/* Toolbar: PIN Code Search */}
+        <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-950/40 flex items-center justify-between gap-3 text-xs">
           {/* Indian PIN Code / Place Search */}
-          <form onSubmit={handlePincodeSearch} className="flex items-center gap-1.5 flex-1 min-w-[280px]">
+          <form onSubmit={handlePincodeSearch} className="flex items-center gap-2 flex-1 max-w-xl">
             <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 shrink-0 flex items-center gap-1">
               🇮🇳 PIN Code / City:
             </span>
@@ -219,26 +209,10 @@ export const WideMapModal: React.FC<Props> = ({
             </button>
           </form>
 
-          {/* Quick Presets (Only 2-3 Indian Locations) */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-slate-500 dark:text-slate-400 font-medium text-[11px]">Presets:</span>
-            {REGIONAL_PRESETS.map((p, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => {
-                  setPincodeInput(p.pin);
-                  handleSelectPreset(p.lat, p.lng);
-                }}
-                className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer text-[11px] border ${
-                  Math.abs(selectedLat - p.lat) < 0.05 && Math.abs(selectedLng - p.lng) < 0.05
-                    ? 'bg-cyan-100 dark:bg-cyan-950 text-cyan-900 dark:text-cyan-300 border-cyan-400 dark:border-cyan-700 font-bold'
-                    : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
-                }`}
-              >
-                {p.name}
-              </button>
-            ))}
+          {/* Clean live coordinates badge */}
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono hidden sm:flex items-center gap-3 shrink-0">
+            <span>Lat: <strong className="text-slate-800 dark:text-slate-200">{selectedLat.toFixed(4)}°N</strong></span>
+            <span>Lng: <strong className="text-slate-800 dark:text-slate-200">{selectedLng.toFixed(4)}°E</strong></span>
           </div>
         </div>
 
